@@ -1,6 +1,71 @@
 ---
 import Layout from "../layouts/Layout.astro";
-const recette = await Astro.locals.pb.collection("").getFullList();
+import Logo from "../assets/logo.svg?url";
+import Button from "../components/Button.astro";
 ---
 
-<Layout> Salut </Layout>
+<Layout>
+    <div
+        class="bg-primary h-full w-full flex flex-col items-center justify-around py-25"
+    >
+        <div class="flex flex-col items-center">
+            <img src={Logo} class="w-1/2" alt="Logo" />
+            <div class="space-y-5">
+                <p
+                    class="uppercase font-montserrat font-bold text-tertiary text-xl md:text-3xl text-center"
+                >
+                    Votre nutritionniste du quotidien
+                </p>
+                <p
+                    class="font-montserrat font-bold text-tertiary text-lg md:text-2xl text-center"
+                >
+                    Lâchez prise, nous nous occupons de votre alimentation pour
+                    vous.
+                </p>
+            </div>
+        </div>
+        <div class="flex flex-col md:hidden space-y-10 text-center w-2/4">
+            <Button
+                borderColor="var(--color-tertiary)"
+                ,
+                bgClass="bg-primary"
+                ,
+                colorClass="text-tertiary"
+                ,
+                text="connsxion"
+                ,
+                page="auth"
+                ,
+                size="lg"
+            />
+            <p
+                class="uppercase text-tertiary font-montserrat font-bold text-2xl"
+            >
+                ou
+            </p>
+            <Button
+                borderColor="var(--color-tertiary)"
+                ,
+                bgClass="bg-secondary"
+                ,
+                colorClass="text-tertiary"
+                ,
+                text="inscription"
+                ,
+                page="auth"
+                ,
+                size="lg"
+            />
+        </div>
+        <p
+            class="text-center md:hidden uppercase font-montserrat font-bold text-tertiary text-xl"
+        >
+            Lâchez prise, nous nous occupons de votre alimentation pour vous.
+        </p>
+        <p
+            class="text-center uppercase hidden md:block font-montserrat font-bold text-tertiary text-xl"
+        >
+            cliquez pour vous connecter
+        </p>
+    </div>
+</Layout>
