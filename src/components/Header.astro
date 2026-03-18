@@ -38,7 +38,7 @@ const { allHeader = false, titrePage } = Astro.props;
     </header>
 ) : (
     <header class="capitalize absolute font-montserrat mt-5 md:mt-5 flex items-center justify-between px-5 md:px-10 w-full">
-        <div class="hidden md:flex items-center md:gap-10 lg:gap-20 mg:4/5 lg:w-3/5 xl:w-3/6 2xl:w-2/6">
+        <div class="hidden md:flex items-center md:gap-10 lg:gap-20 mg:4/5 lg:w-3/5 xl:w-3/6 2xl:w-3/7">
             <a href="/accueil">
                 <img src={Logo} alt="Logo Nura" class="h-25 hover:-rotate-2 transition ease-in-out">
             </a>
@@ -55,6 +55,7 @@ const { allHeader = false, titrePage } = Astro.props;
                     <p class="">{user?.prenom}</p>
                     <p class="">{user?.nom}</p>
                 </div>
+                <p>{user?.objectif}</p>
             </div>
         </a>
         <div class="block md:hidden">

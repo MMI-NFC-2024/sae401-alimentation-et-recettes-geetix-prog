@@ -4,6 +4,10 @@ import Logo from "../assets/logo.svg?url";
 
 const { locals, request, redirect } = Astro;
 
+if(locals.pb.authStore.isValid){
+    return redirect("/accueil")
+}
+
 const url = new URL(request.url);
 const loginError = url.searchParams.get("loginError") ?? "";
 const registerError = url.searchParams.get("registerError") ?? "";
