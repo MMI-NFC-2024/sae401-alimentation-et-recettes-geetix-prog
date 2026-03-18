@@ -1,7 +1,215 @@
 ---
-import Layout from "../layouts/Layout.astro"
+import Layout from "../layouts/Layout.astro";
+import Logo from "../assets/logo.svg?url";
+
+const { locals, request, redirect } = Astro;
+
+if(locals.pb.authStore.isValid){
+    return redirect("/accueil")
+}
+
+const url = new URL(request.url);
+const loginError = url.searchParams.get("loginError") ?? "";
+const registerError = url.searchParams.get("registerError") ?? "";
+const activeMode = url.searchParams.get("mode") ?? "login";
+
+if (request.method === "POST") {
+    const form = await request.formData();
+    const action = form.get("_action") as string;
+
+    if (action === "login") {
+        const identity = form.get("identity") as string;
+        const password = form.get("password") as string;
+
+        try {
+            await locals.pb.collection("users").authWithPassword(identity, password);
+            return redirect("/accueil");
+        } catch {
+            return redirect(`/auth?mode=login&loginError=Email+ou+mot+de+passe+incorrect`);
+        }
+
+    } else if (action === "register") {
+        const email = form.get("email") as string;
+        const nom = form.get("nom") as string;
+        const prenom = form.get("prenom") as string;
+        const password = form.get("password") as string;
+        const passwordConfirm = form.get("passwordConfirm") as string;
+
+        if (password.length < 8) {
+            return redirect(`/auth?mode=register&registerError=Mot+de+passe+trop+court+(8+caractères+min)`);
+        }
+        if (password !== passwordConfirm) {
+            return redirect(`/auth?mode=register&registerError=Les+mots+de+passe+ne+correspondent+pas`);
+        }
+
+        try {
+            const avatar = form.get("avatar") as File | null;
+            const username = `${prenom}.${nom}`.toLowerCase().replace(/\s+/g, "");
+            await locals.pb.collection("users").create({
+                email,
+                username,
+                prenom,
+                nom,
+                password,
+                passwordConfirm,
+                ...(avatar && avatar.size > 0 ? { avatar } : {}),
+            });
+            await locals.pb.collection("users").authWithPassword(email, password);
+            return redirect("/accueil");
+        } catch (err: any) {
+            const msg = encodeURIComponent(err?.response?.message ?? "Une erreur est survenue");
+            return redirect(`/auth?mode=register&registerError=${msg}`);
+        }
+    }
+}
 ---
 
 <Layout>
-    
+    <div class="w-full bg-secondary font-montserrat flex overflow-hidden h-screen relative">
+        <div class="flex flex-col w-1/2 h-screen justify-center space-y-10 items-center px-10">
+            <h1 class="text-6xl text-tertiary font-modak uppercase">Connexion</h1>
+            <form method="post" class="flex flex-col items-center gap-5 w-full max-w-sm">
+                <input type="hidden" name="_action" value="login" />
+                {loginError && <p class="text-red-400 text-sm">{loginError}</p>}
+                <div class="flex flex-col gap-2 w-full">
+                    <label class="text-tertiary font-bold text-sm uppercase">Email</label>
+                    <input
+                        placeholder="Votre email"
+                        name="identity"
+                        type="text"
+                        required
+                        autocomplete="email"
+                        class="bg-tertiary rounded-full w-full py-2 px-4 text-dark focus:outline-none"
+                    />
+                </div>
+                <div class="flex flex-col gap-2 w-full">
+                    <label class="text-tertiary font-bold text-sm uppercase">Mot de passe</label>
+                    <input
+                        placeholder="Votre mot de passe"
+                        name="password"
+                        type="password"
+                        required
+                        autocomplete="current-password"
+                        class="bg-tertiary rounded-full w-full py-2 px-4 text-dark focus:outline-none"
+                    />
+                </div>
+                <button
+                    id="btnRegister"
+                    style="--btn-border: var(--color-tertiary); transform: scale(1); transform-origin: center;"
+                    class="cursor-pointer mt-10 w-3/5 py-2 inline-block bg-secondary text-tertiary uppercase px-4 sm:px-6 md:px-8 lg:px-10 rounded-full font-modak text-sm sm:text-base md:text-lg shadow-[0_0_0_2px_var(--btn-border),3px_3px_0px_1px_var(--btn-border)] hover:scale-105 active:scale-95 transition-transform duration-150 ease-in"
+                >
+                    se connecter
+                </button>
+            </form>
+        </div>
+
+        <div class="flex flex-col w-1/2 h-screen justify-center space-y-10 items-center px-10">
+            <h1 class="text-6xl text-tertiary font-modak uppercase">Inscription</h1>
+            <form method="post" enctype="multipart/form-data" class="flex flex-col items-center gap-4 w-full max-w-sm">
+                <input type="hidden" name="_action" value="register" />
+                {registerError && <p class="text-red-400 text-sm">{registerError}</p>}
+                <div class="flex flex-col gap-2  w-full">
+                    <label class="text-tertiary font-bold text-sm uppercase">Prénom</label>
+                    <input
+                        placeholder="Votre prénom"
+                        name="prenom"
+                        type="text"
+                        required
+                        autocomplete="given-name"
+                        class="bg-tertiary rounded-full w-full py-2 px-4 text-dark focus:outline-none"
+                    />
+                </div>
+                <div class="flex flex-col gap-2 w-full">
+                    <label class="text-tertiary font-bold text-sm uppercase">Nom</label>
+                    <input
+                        placeholder="Votre nom"
+                        name="nom"
+                        type="text"
+                        required
+                        autocomplete="family-name"
+                        class="bg-tertiary rounded-full w-full py-2 px-4 text-dark focus:outline-none"
+                    />
+                </div>
+                <div class="flex flex-col gap-2 w-full">
+                    <label class="text-tertiary font-bold text-sm uppercase">Email</label>
+                    <input
+                        placeholder="Votre email"
+                        name="email"
+                        type="email"
+                        required
+                        autocomplete="email"
+                        class="bg-tertiary rounded-full w-full py-2 px-4 text-dark focus:outline-none"
+                    />
+                </div>
+                <div class="flex flex-col gap-2 w-full">
+                    <label class="text-tertiary font-bold text-sm uppercase">Avatar</label>
+                    <input
+                        id="avatarInput"
+                        name="avatar"
+                        type="file"
+                        accept="image/*"
+                        class="bg-tertiary rounded-full w-full py-2 px-4 text-dark focus:outline-none file:mr-3 file:rounded-full file:border-0 file:bg-primary file:text-tertiary file:px-3 file:py-1 file:text-sm file:cursor-pointer"
+                    />
+                </div>
+                <div class="flex flex-col gap-2 w-full">
+                    <label class="text-tertiary font-bold text-sm uppercase">Mot de passe</label>
+                    <input
+                        placeholder="Votre mot de passe"
+                        name="password"
+                        type="password"
+                        required
+                        autocomplete="new-password"
+                        class="bg-tertiary rounded-full w-full py-2 px-4 text-dark focus:outline-none"
+                    />
+                </div>
+                <div class="flex flex-col gap-2 w-full">
+                    <label class="text-tertiary font-bold text-sm uppercase">Confirmer le mot de passe</label>
+                    <input
+                        placeholder="Confirmer votre mot de passe"
+                        name="passwordConfirm"
+                        type="password"
+                        required
+                        autocomplete="new-password"
+                        class="bg-tertiary rounded-full w-full py-2 px-4 text-dark focus:outline-none"
+                    />
+                </div>
+                <button
+                    id="btnRegister"
+                    style="--btn-border: var(--color-tertiary); transform: scale(1); transform-origin: center;"
+                    class="cursor-pointer mt-10 w-3/5 py-2 inline-block bg-secondary text-tertiary uppercase px-4 sm:px-6 md:px-8 lg:px-10 rounded-full font-modak text-sm sm:text-base md:text-lg shadow-[0_0_0_2px_var(--btn-border),3px_3px_0px_1px_var(--btn-border)] hover:scale-105 active:scale-95 transition-transform duration-150 ease-in"
+                >
+                    s'inscrire
+                </button>
+            </form>
+        </div>
+
+        <div
+            id="balayage"
+            class="absolute h-screen w-1/2 bg-primary top-0 right-0 flex flex-col space-y-10 justify-center items-center cursor-pointer z-10"
+            style={`transform: translateX(${activeMode === "register" ? "-100%" : "0"}); transition: all 0.5s ease-in-out;`}
+        >
+            <img src={Logo} class="h-40" alt="logo" />
+            <p id="balayageText" class="text-tertiary font-black text-xl text-center px-8">
+                {activeMode === "register" ? "Cliquez ici pour vous connecter" : "Cliquez ici pour vous inscrire"}
+            </p>
+        </div>
+    </div>
 </Layout>
+
+<script>
+    const balayage = document.getElementById("balayage")!;
+    const balayageText = document.getElementById("balayageText")!;
+    let isLogin = balayage.style.transform !== "translateX(-100%)";
+
+    if (window.location.search) {
+        window.history.replaceState({}, "", window.location.pathname);
+    }
+
+    balayage.addEventListener("click", () => {
+        isLogin = !isLogin;
+        balayage.style.transform = isLogin ? "translateX(0)" : "translateX(-100%)";
+        balayageText.textContent = isLogin
+            ? "Cliquez ici pour vous inscrire"
+            : "Cliquez ici pour vous connecter";
+    });
+</script>

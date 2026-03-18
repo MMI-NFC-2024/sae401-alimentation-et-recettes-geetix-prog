@@ -1,0 +1,22 @@
+---
+import Layout from "../layouts/Layout.astro";
+import "../styles/global.css";
+const { locals,redirect } = Astro;
+
+if(!locals.pb.authStore.isValid){
+    return redirect("/")
+}
+
+const user = locals.pb.authStore.record;
+const avatarUrl = user?.avatar
+    ? locals.pb.files.getURL(user, user.avatar)
+    : null;
+---
+
+<Layout showHeader titrePage="Test">
+    <div class="min-h-screen bg-secondary flex flex-col items-center justify-center gap-6 p-8">
+        <div>
+
+        </div>
+    </div>
+</Layout>

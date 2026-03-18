@@ -5,9 +5,9 @@ import Logo from "../assets/logo.svg?url";
 const { locals, request, redirect } = Astro;
 
 const url = new URL(request.url);
-const loginError   = url.searchParams.get("loginError") ?? "";
+const loginError = url.searchParams.get("loginError") ?? "";
 const registerError = url.searchParams.get("registerError") ?? "";
-const activePanel  = url.searchParams.get("panel") ?? "";
+const activePanel = url.searchParams.get("panel") ?? "";
 
 if (request.method === "POST") {
     const form = await request.formData();
@@ -25,10 +25,10 @@ if (request.method === "POST") {
         }
 
     } else if (action === "register") {
-        const email           = form.get("email") as string;
-        const nom             = form.get("nom") as string;
-        const prenom          = form.get("prenom") as string;
-        const password        = form.get("password") as string;
+        const email = form.get("email") as string;
+        const nom = form.get("nom") as string;
+        const prenom = form.get("prenom") as string;
+        const password = form.get("password") as string;
         const passwordConfirm = form.get("passwordConfirm") as string;
 
         if (password.length > 0 && password.length< 8) {
