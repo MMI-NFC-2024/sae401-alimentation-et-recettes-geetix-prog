@@ -19,7 +19,7 @@ if (request.method === "POST") {
 
         try {
             await locals.pb.collection("users").authWithPassword(email, password);
-            return redirect("/");
+            return redirect("/accueil");
         } catch {
             return redirect(`/?panel=login&loginError=Email+ou+mot+de+passe+incorrect`);
         }
@@ -46,7 +46,7 @@ if (request.method === "POST") {
                 ...(avatar && avatar.size > 0 ? { avatar } : {}),
             });
             await locals.pb.collection("users").authWithPassword(email, password);
-            return redirect("/");
+            return redirect("/accueil");
         } catch (err: any) {
             const msg = encodeURIComponent(err?.response?.message ?? "Une erreur est survenue");
             return redirect(`/?panel=register&registerError=${msg}`);
