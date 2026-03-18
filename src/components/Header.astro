@@ -1,5 +1,5 @@
 ---
-import Notifs from "../assets/icons/notifs.svg?url"
+import Notifs from "../assets/icons/notifs.astro"
 import Logo from "../assets/logo.svg?url";
 
 const { locals } = Astro;
@@ -33,7 +33,7 @@ const { allHeader = false, titrePage } = Astro.props;
             <img src={avatarUrl} alt="avatar" class="w-15 h-15 md:w-17 md:h-17 lg:w-20 lg:h-20 rounded-full hover:rotate-2 transition ease-in-out object-cover" />
         </a>
         <div class="block md:hidden">
-            <img src={Notifs} class="w-7" alt="Logo" />
+            <Notifs />
         </div>
     </header>
 ) : (
@@ -58,7 +58,7 @@ const { allHeader = false, titrePage } = Astro.props;
             </div>
         </a>
         <div class="block md:hidden">
-            <img src={Notifs} class="w-7" alt="Logo" />
+            <Notifs />
         </div>
     </header>
 )}
