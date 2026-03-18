@@ -1,71 +1,288 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import Logo from "../assets/logo.svg?url";
-import Button from "../components/Button.astro";
+
+const { locals, request, redirect } = Astro;
+
+const url = new URL(request.url);
+const loginError   = url.searchParams.get("loginError") ?? "";
+const registerError = url.searchParams.get("registerError") ?? "";
+const activePanel  = url.searchParams.get("panel") ?? "";
+
+if (request.method === "POST") {
+    const form = await request.formData();
+    const action = form.get("_action") as string;
+
+    if (action === "login") {
+        const email    = form.get("email") as string;
+        const password = form.get("password") as string;
+
+        try {
+            await locals.pb.collection("users").authWithPassword(email, password);
+            return redirect("/");
+        } catch {
+            return redirect(`/?panel=login&loginError=Email+ou+mot+de+passe+incorrect`);
+        }
+
+    } else if (action === "register") {
+        const email           = form.get("email") as string;
+        const nom             = form.get("nom") as string;
+        const prenom          = form.get("prenom") as string;
+        const password        = form.get("password") as string;
+        const passwordConfirm = form.get("passwordConfirm") as string;
+
+        if (password.length > 0 && password.length< 8) {
+            return redirect(`/?panel=register&registerError=Le+mot+de+passe+est+trop+court+(8+caracteres+min)`);
+        }
+        if (password !== passwordConfirm) {
+            return redirect(`/?panel=register&registerError=Les+mots+de+passe+ne+correspondent+pas`);
+        }
+
+        try {
+            const username = `${prenom}.${nom}`.toLowerCase().replace(/\s+/g, "");
+            const avatar = form.get("avatar") as File | null;
+            await locals.pb.collection("users").create({
+                email, prenom, nom, password, passwordConfirm,
+                ...(avatar && avatar.size > 0 ? { avatar } : {}),
+            });
+            await locals.pb.collection("users").authWithPassword(email, password);
+            return redirect("/");
+        } catch (err: any) {
+            const msg = encodeURIComponent(err?.response?.message ?? "Une erreur est survenue");
+            return redirect(`/?panel=register&registerError=${msg}`);
+        }
+    }
+}
 ---
 
 <Layout>
-    <div
-        class="bg-primary h-full w-full flex flex-col items-center justify-around py-25"
-    >
-        <div class="flex flex-col items-center">
-            <img src={Logo} class="w-1/2" alt="Logo" />
-            <div class="space-y-5">
-                <p
-                    class="uppercase font-montserrat font-bold text-tertiary text-xl md:text-3xl text-center"
-                >
-                    Votre nutritionniste du quotidien
-                </p>
-                <p
-                    class="font-montserrat font-bold text-tertiary text-lg md:text-2xl text-center"
-                >
-                    Lâchez prise, nous nous occupons de votre alimentation pour
-                    vous.
-                </p>
+    <div class="bg-dark">
+        <div
+            id="onboard"
+            class={`bg-primary h-screen w-full flex flex-col items-center justify-around py-0 md:py-25 transition-opacity duration-300 ${activePanel ? "opacity-75" : ""}`}
+        >
+            <div class="flex flex-col items-center">
+                <img src={Logo} class="w-1/2" alt="Logo" />
+                <div class="space-y-5">
+                    <h1 class="uppercase font-montserrat font-bold text-tertiary text-xl md:text-3xl text-center">
+                        Votre nutritionniste du quotidien
+                    </h1>
+                    <p class="font-montserrat font-bold hidden md:block text-tertiary text-lg md:text-2xl text-center">
+                        Lâchez prise, nous nous occupons de votre alimentation pour vous.
+                    </p>
+                </div>
             </div>
-        </div>
-        <div class="flex flex-col md:hidden space-y-10 text-center w-2/4">
-            <Button
-                borderColor="var(--color-tertiary)"
-                ,
-                bgClass="bg-primary"
-                ,
-                colorClass="text-tertiary"
-                ,
-                text="connsxion"
-                ,
-                page="auth"
-                ,
-                size="lg"
-            />
-            <p
-                class="uppercase text-tertiary font-montserrat font-bold text-2xl"
-            >
-                ou
+            <div class="flex flex-col md:hidden space-y-10 text-center w-2/4">
+                <button
+                    id="btnLogin"
+                    style="--btn-border: var(--color-tertiary); transform: scale(1.75); transform-origin: center;"
+                    class="inline-block bg-primary text-tertiary uppercase px-4 sm:px-6 md:px-8 lg:px-10 py-1.5 sm:py-2 md:py-2.5 lg:py-3 rounded-full font-modak text-sm sm:text-base md:text-lg shadow-[0_0_0_2px_var(--btn-border),2px_2px_0px_1px_var(--btn-border)] hover:scale-105 active:scale-95 transition-transform duration-150 ease-in"
+                >
+                    connexion
+                </button>
+                <p class="uppercase text-tertiary font-montserrat font-bold text-2xl">ou</p>
+                <button
+                    id="btnRegister"
+                    style="--btn-border: var(--color-tertiary); transform: scale(1.75); transform-origin: center;"
+                    class="inline-block bg-secondary text-tertiary uppercase px-4 sm:px-6 md:px-8 lg:px-10 py-1.5 sm:py-2 md:py-2.5 lg:py-3 rounded-full font-modak text-sm sm:text-base md:text-lg shadow-[0_0_0_2px_var(--btn-border),2px_2px_0px_1px_var(--btn-border)] hover:scale-105 active:scale-95 transition-transform duration-150 ease-in"
+                >
+                    inscription
+                </button>
+            </div>
+            <p class="text-center md:hidden uppercase font-montserrat font-bold text-tertiary text-xl">
+                Lâchez prise, nous nous occupons de votre alimentation pour vous.
             </p>
-            <Button
-                borderColor="var(--color-tertiary)"
-                ,
-                bgClass="bg-secondary"
-                ,
-                colorClass="text-tertiary"
-                ,
-                text="inscription"
-                ,
-                page="auth"
-                ,
-                size="lg"
-            />
+            <a href="/auth" class="text-center hover:scale-110 transition ease-in-out uppercase hidden md:block font-montserrat font-bold text-tertiary text-xl">
+                cliquez pour vous connecter
+            </a>
         </div>
-        <p
-            class="text-center md:hidden uppercase font-montserrat font-bold text-tertiary text-xl"
-        >
-            Lâchez prise, nous nous occupons de votre alimentation pour vous.
-        </p>
-        <p
-            class="text-center uppercase hidden md:block font-montserrat font-bold text-tertiary text-xl"
-        >
-            cliquez pour vous connecter
-        </p>
+    </div>
+
+    <div
+        id="login"
+        class={`bg-primary h-2/3 rounded-t-4xl w-full fixed bottom-0 z-10 transition-transform duration-500 ease-out ${activePanel === "login" ? "" : "translate-y-full"}`}
+    >
+        <div class="flex flex-col items-center justify-center h-full px-6 py-8">
+            <h2 class="font-modak uppercase text-tertiary text-5xl mb-8">Connexion</h2>
+            <form method="post" class="w-full flex flex-col items-center max-w-sm space-y-6">
+                <input type="hidden" name="_action" value="login" />
+                {loginError && (
+                    <p class="text-red-400 font-montserrat text-sm text-center">{loginError}</p>
+                )}
+                <div class="w-4/5">
+                    <input
+                        name="email"
+                        placeholder="Votre email"
+                        type="email"
+                        class="w-full px-4 py-2 rounded-full bg-tertiary text-dark border-2 border-tertiary focus:border-dark"
+                        required
+                    />
+                </div>
+                <div class="w-4/5 relative">
+                    <input
+                        id="loginPassword"
+                        name="password"
+                        placeholder="Votre mot de passe"
+                        type="password"
+                        class="w-full px-4 py-2 rounded-full bg-tertiary text-dark border-2 border-tertiary focus:border-dark pr-12"
+                        required
+                    />
+                    <button type="button" data-toggle="loginPassword" class="absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer text-lg bg-transparent border-none">👁️</button>
+                </div>
+                <button
+                    type="submit"
+                    style="--btn-border: var(--color-tertiary);"
+                    class="inline-block bg-primary text-tertiary uppercase px-8 py-2 rounded-full font-modak text-base shadow-[0_0_0_2px_var(--btn-border),2px_2px_0px_1px_var(--btn-border)] hover:scale-105 active:scale-95 transition-transform duration-150 ease-in mt-5"
+                >
+                    Se connecter
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div
+        id="register"
+        class={`bg-secondary h-4/5 rounded-t-4xl w-full fixed bottom-0 z-10 transition-transform duration-500 ease-out ${activePanel === "register" ? "" : "translate-y-full"}`}
+    >
+        <div class="flex flex-col items-center justify-center h-full px-6 py-8">
+            <h2 class="font-modak uppercase text-tertiary text-5xl mb-8">Inscription</h2>
+            <form method="post" enctype="multipart/form-data" class="w-full flex flex-col items-center max-w-sm space-y-6">
+                <input type="hidden" name="_action" value="register" />
+                {registerError && (
+                    <p class="text-red-400 font-montserrat text-sm text-center">{registerError}</p>
+                )}
+                <!-- Avatar picker -->
+                <div class="flex flex-col items-center gap-2">
+                    <button type="button" id="avatarBtn" class="w-20 h-20 rounded-full bg-tertiary border-2 border-tertiary overflow-hidden flex items-center justify-center text-3xl hover:opacity-80 transition-opacity">
+                        <img id="avatarPreview" class="w-full h-full object-cover hidden" alt="avatar" />
+                        <span id="avatarIcon">🧑</span>
+                    </button>
+                    <span class="text-tertiary font-montserrat text-xs">Choisir un avatar</span>
+                    <input type="file" id="avatarInput" name="avatar" accept="image/*" class="hidden" />
+                </div>
+                <div class="w-4/5">
+                    <input
+                        name="email"
+                        placeholder="Votre email"
+                        type="email"
+                        class="w-full px-4 py-2 rounded-full bg-tertiary text-dark border-2 border-tertiary focus:border-dark"
+                        required
+                    />
+                </div>
+                <div class="w-4/5">
+                    <input
+                        name="prenom"
+                        placeholder="Votre prénom"
+                        type="text"
+                        class="w-full px-4 py-2 rounded-full bg-tertiary text-dark border-2 border-tertiary focus:border-dark"
+                        required
+                    />
+                </div>
+                <div class="w-4/5">
+                    <input
+                        name="nom"
+                        placeholder="Votre nom"
+                        type="text"
+                        class="w-full px-4 py-2 rounded-full bg-tertiary text-dark border-2 border-tertiary focus:border-dark"
+                        required
+                    />
+                </div>
+                <div class="w-4/5 relative">
+                    <input
+                        id="registerPassword"
+                        name="password"
+                        placeholder="Votre mot de passe"
+                        type="password"
+                        class="w-full px-4 py-2 rounded-full bg-tertiary text-dark border-2 border-tertiary focus:border-dark pr-12"
+                        required
+                    />
+                    <button type="button" data-toggle="registerPassword" class="absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer text-lg bg-transparent border-none">👁️</button>
+                </div>
+                <div class="w-4/5">
+                    <input
+                        name="passwordConfirm"
+                        placeholder="Confirmer le mot de passe"
+                        type="password"
+                        class="w-full px-4 py-2 rounded-full bg-tertiary text-dark border-2 border-tertiary focus:border-dark"
+                        required
+                    />
+                </div>
+                <button
+                    type="submit"
+                    style="--btn-border: var(--color-tertiary);"
+                    class="inline-block bg-secondary text-tertiary uppercase px-8 py-2 rounded-full font-modak text-base shadow-[0_0_0_2px_var(--btn-border),2px_2px_0px_1px_var(--btn-border)] hover:scale-105 active:scale-95 transition-transform duration-150 ease-in mt-5"
+                >
+                    S'inscrire
+                </button>
+            </form>
+        </div>
     </div>
 </Layout>
+
+<script>
+    const btnLogin  = document.getElementById("btnLogin");
+    const btnRegister = document.getElementById("btnRegister");
+    const logPanel  = document.getElementById("login")!;
+    const regPanel  = document.getElementById("register")!;
+    const board     = document.getElementById("onboard")!;
+
+    function openPanel(panel: HTMLElement) {
+        logPanel.classList.add("translate-y-full");
+        regPanel.classList.add("translate-y-full");
+        panel.classList.remove("translate-y-full");
+        board.classList.add("opacity-75");
+    }
+
+    function closePanels() {
+        logPanel.classList.add("translate-y-full");
+        regPanel.classList.add("translate-y-full");
+        board.classList.remove("opacity-75");
+    }
+
+    // Nettoie les query params de l'URL sans recharger la page
+    if (window.location.search) {
+        window.history.replaceState({}, "", window.location.pathname);
+    }
+
+    btnLogin?.addEventListener("click", (e) => { e.stopPropagation(); openPanel(logPanel); });
+    btnRegister?.addEventListener("click", (e) => { e.stopPropagation(); openPanel(regPanel); });
+
+    document.addEventListener("click", (e) => {
+        const t = e.target as Node;
+        if (!logPanel.contains(t) && !regPanel.contains(t)) closePanels();
+    });
+
+    // Avatar picker
+    const avatarBtn     = document.getElementById("avatarBtn");
+    const avatarInput   = document.getElementById("avatarInput") as HTMLInputElement;
+    const avatarPreview = document.getElementById("avatarPreview") as HTMLImageElement;
+    const avatarIcon    = document.getElementById("avatarIcon")!;
+
+    avatarBtn?.addEventListener("click", (e) => {
+        e.stopPropagation();
+        avatarInput.click();
+    });
+
+    avatarInput?.addEventListener("change", () => {
+        const file = avatarInput.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                avatarPreview.src = e.target!.result as string;
+                avatarPreview.classList.remove("hidden");
+                avatarIcon.classList.add("hidden");
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    document.querySelectorAll<HTMLButtonElement>("[data-toggle]").forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const input = document.getElementById(btn.dataset.toggle!) as HTMLInputElement;
+            const isPassword = input.type === "password";
+            input.type = isPassword ? "text" : "password";
+            btn.textContent = isPassword ? "👁️‍🗨️" : "👁️";
+        });
+    });
+</script>
