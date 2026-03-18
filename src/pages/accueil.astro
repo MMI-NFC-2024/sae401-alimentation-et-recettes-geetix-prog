@@ -56,7 +56,7 @@ const recettesDuJour = await getRecettesDuJour(locals.pb);
         <MobileLine />
     </div>
     <div class="bg-tertiary z-20 flex flex-col items-center py-20 px-5 sm:px-7 md:px-10 lg:px-30 gap-10">
-        <h2 class="font-modak text-primary text-4xl sm:text-5xl lg:text-6xl">Recettes du jour</h2>
+        <h2 class="font-modak text-primary text-4xl sm:text-5xl lg:text-6xl uppercase">Recettes du jour</h2>
         <div class="flex flex-col md:flex-row gap-6 w-full justify-center">
             {recettesDuJour.map((recette, i) => {
                 const imageUrl = recette.image
@@ -78,6 +78,12 @@ const recettesDuJour = await getRecettesDuJour(locals.pb);
                 );
             })}
         </div>
-        <Button bgClass="tertiary", colorClass="secondary", text="en voir plus", page="/recettes", borderColor = "secondary", size = "md" />
+        <Button bgClass="tertiary", colorClass="secondary", text="en voir plus", page="recettes", borderColor = "secondary", size = "md" />
+    </div>
+    <div class="-mt-2 -mb-3 md:-mt-4 md:-mb-5 lg:-mt-6 lg:-mb-7 relative z-10">
+        <MobileLine lineColor="tertiary" />
+    </div>
+    <div class="bg-primary z-20 flex flex-col items-center py-20 px-5 sm:px-7 md:px-10 lg:px-30 gap-10">
+        <h2 class="font-modak text-tertiary text-4xl sm:text-5xl lg:text-6xl uppercase">changer ton objectif</h2>
     </div>
 </Layout>
