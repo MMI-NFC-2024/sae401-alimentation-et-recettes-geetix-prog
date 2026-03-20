@@ -97,6 +97,13 @@ export enum RecettesDifficulteOptions {
 	"moyen" = "moyen",
 	"difficile" = "difficile",
 }
+export enum RecettesObjectifOptions {
+	"prendre de la masse" = "prendre de la masse",
+	"perdre du poids" = "perdre du poids",
+	"manger sain" = "manger sain",
+	"booster son énergie" = "booster son énergie",
+}
+
 export type RecettesRecord = {
 	created: IsoAutoDateString
 	description?: string
@@ -105,6 +112,7 @@ export type RecettesRecord = {
 	image?: FileNameString
 	nb_portions?: number
 	note_moyenne?: number
+	objectif?: RecettesObjectifOptions[]
 	temps_preparation?: number
 	titre: string
 	updated: IsoAutoDateString

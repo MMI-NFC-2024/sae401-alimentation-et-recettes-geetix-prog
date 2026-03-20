@@ -25,7 +25,7 @@ export const onRequest = defineMiddleware(
     if (!isPrerendered) {
       response.headers.append(
         "set-cookie",
-        locals.pb.authStore.exportToCookie(),
+        locals.pb.authStore.exportToCookie({ maxAge: 2592000 }),
       );
     }
 

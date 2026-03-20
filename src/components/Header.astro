@@ -21,7 +21,7 @@ const colorMobile = titrePage === "Recettes" ? "dark" : "white";
 ---
 
 {titrePage === "Accueil" ? (
-    <header id="main-header" style={`color: var(--color-${color})`} class="capitalize fixed top-0 font-montserrat mt-5 md:mt-5 lg:mt-10 flex items-center justify-between px-5 md:px-10 lg:px-20 w-full z-40 transition-[transform,color] duration-300 ease-in-out">
+    <header id="main-header" style={`color: var(--color-${color})`} class="capitalize absolute md:fixed top-0 font-montserrat mt-5 md:mt-5 lg:mt-10 flex items-center justify-between px-5 md:px-10 lg:px-20 w-full z-40 transition-[transform,color] duration-300 ease-in-out">
         <div class="hidden md:flex items-center md:gap-10 lg:gap-20 mg:4/5 lg:w-3/5 xl:w-3/6 2xl:w-3/7">
             <a href="/accueil" class="hover:-rotate-2 transition ease-in-out">
                 <Logo color={color} class="h-16 w-auto" />
@@ -40,7 +40,7 @@ const colorMobile = titrePage === "Recettes" ? "dark" : "white";
         </div>
     </header>
 ) : (
-    <header id="main-header" style={`color: var(--color-${color})`} class="capitalize fixed top-0 font-montserrat mt-5 md:mt-5 flex items-center justify-between px-5 md:px-10 w-full z-40 transition-[transform,color] duration-300 ease-in-out">
+    <header id="main-header" style={`color: var(--color-${color})`} class="capitalize absolute md:fixed top-0 font-montserrat mt-5 md:mt-5 flex items-center justify-between px-5 md:px-10 w-full z-40 transition-[transform,color] duration-300 ease-in-out">
         <div class="hidden md:flex items-center md:gap-10 lg:gap-20 mg:4/5 lg:w-3/5 xl:w-3/6 2xl:w-3/7">
             <a href="/accueil" class="hover:-rotate-2 transition ease-in-out">
                 <Logo color={color} class="h-16 w-auto" />
@@ -54,11 +54,11 @@ const colorMobile = titrePage === "Recettes" ? "dark" : "white";
         <a href="/profil" class="flex items-center space-x-3">
             <img src={avatarUrl} alt="avatar" class="w-15 h-15 md:w-17 md:h-17 lg:w-20 lg:h-20 rounded-full hover:rotate-2 transition ease-in-out object-cover" />
             <div class="flex-col md:hidden -space-y-2">
-                <div class={`flex space-x-1 text-${colorMobile} font-montserrat text-xl`}>
+                <div class={`flex space-x-1 text-${colorMobile} font-montserrat text-sm`}>
                     <p>{user?.prenom}</p>
                     <p>{user?.nom}</p>
                 </div>
-                <p class={`text-${color} uppercase font-montserrat text-2xl font-bold`}>{user?.objectif}</p>
+                <p class={`text-${color} uppercase font-montserrat text-lg font-bold`}>{user?.objectif}</p>
             </div>
         </a>
         <div class="block md:hidden">
