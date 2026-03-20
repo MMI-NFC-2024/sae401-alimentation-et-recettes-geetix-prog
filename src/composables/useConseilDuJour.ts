@@ -1,4 +1,6 @@
-export async function getConseilDuJour(pb, objectif) {
+import type PocketBase from "pocketbase";
+
+export async function getConseilDuJour(pb: PocketBase, objectif: string | undefined): Promise<string | null> {
     if (!objectif) return null;
 
     const conseils = await pb.collection("Conseil").getFullList({
@@ -9,8 +11,8 @@ export async function getConseilDuJour(pb, objectif) {
 
     const now = new Date();
     const debut = new Date(now.getFullYear(), 0, 0);
-    const diff = now - debut;
+    const diff = now.getTime() - debut.getTime();
     const jourDansAnnee = Math.floor(diff / (1000 * 60 * 60 * 24));
 
-    return conseils[jourDansAnnee % conseils.length].conseil;
+    return (conseils[jourDansAnnee % conseils.length] as any).conseil;
 }

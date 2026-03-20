@@ -4,7 +4,14 @@ import iconFlash from "../assets/icons/iconFlash.svg?url";
 import iconFire from "../assets/icons/iconFire.svg?url";
 import iconGrass from "../assets/icons/iconGrass.svg?url";
 
-export const objectifs = [
+export type Objectif = {
+    value: string;
+    iconLeft: string;
+    iconRight: string;
+    accroche: string;
+};
+
+export const objectifs: Objectif[] = [
     {
         value: "prendre de la masse",
         iconLeft: brasG,
