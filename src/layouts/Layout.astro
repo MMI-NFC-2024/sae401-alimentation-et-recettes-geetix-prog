@@ -28,7 +28,7 @@ const { showHeader = false, titrePage } = Astro.props;
 		<slot />
 		{showHeader && <ScrollToTop />}
 		{showHeader && <BottomNav currentPage={`/${titrePage?.toLowerCase()}`} />}
-		<Footer/>
+		{showHeader && <Footer/>}
 	</body>
 </html>
 
