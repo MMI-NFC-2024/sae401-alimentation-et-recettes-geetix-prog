@@ -1,0 +1,30 @@
+---
+---
+
+<button
+    id="scroll-top"
+    aria-label="Remonter en haut"
+    class="cursor-pointer hidden md:flex fixed bottom-8 right-8 z-50 w-12 h-12 bg-primary text-tertiary rounded-full items-center justify-center shadow-lg opacity-0 pointer-events-none transition-opacity duration-300 hover:scale-110 active:scale-95"
+>
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 10.5 12 3m0 0 7.5 7.5M12 3v18" />
+    </svg>
+</button>
+
+<script>
+    const btn = document.getElementById("scroll-top") as HTMLElement;
+
+    window.addEventListener("scroll", () => {
+        if (window.scrollY > 300) {
+            btn.style.opacity = "1";
+            btn.style.pointerEvents = "auto";
+        } else {
+            btn.style.opacity = "0";
+            btn.style.pointerEvents = "none";
+        }
+    });
+
+    btn.addEventListener("click", () => {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+</script>
