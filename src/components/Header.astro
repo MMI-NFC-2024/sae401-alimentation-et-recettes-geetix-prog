@@ -1,6 +1,6 @@
 ---
 import Notifs from "../assets/icons/notifs.astro"
-import Logo from "../assets/logo.svg?url";
+import Logo from "../assets/logo.astro";
 
 const { locals } = Astro;
 
@@ -15,18 +15,21 @@ interface Props {
 }
 
 const { allHeader = false, titrePage } = Astro.props;
+
+const color = titrePage === "Recettes" ? "secondary" : "tertiary";
+const colorMobile = titrePage === "Recettes" ? "dark" : "white";
 ---
 
 {titrePage === "Accueil" ? (
-    <header class="capitalize absolute font-montserrat mt-5 md:mt-5 lg:mt-10 flex items-center justify-between px-5 md:px-10 lg:px-20 w-full">
+    <header id="main-header" style={`color: var(--color-${color})`} class="capitalize fixed top-0 font-montserrat mt-5 md:mt-5 lg:mt-10 flex items-center justify-between px-5 md:px-10 lg:px-20 w-full z-40 transition-[transform,color] duration-300 ease-in-out">
         <div class="hidden md:flex items-center md:gap-10 lg:gap-20 mg:4/5 lg:w-3/5 xl:w-3/6 2xl:w-3/7">
-            <a href="/accueil">
-                <img src={Logo} alt="Logo Nura" class="h-25 hover:-rotate-2 transition ease-in-out">
+            <a href="/accueil" class="hover:-rotate-2 transition ease-in-out">
+                <Logo color={color} class="h-16 w-auto" />
             </a>
-            <ul class="flex justify-between w-full text-tertiary/80 md:text-lg lg:text-xl font-bold">
-                <li class="hover:text-tertiary hover:scale-110 transition ease-in-out"><a href="/aliments">Aliments</a></li>
-                <li class="hover:text-tertiary hover:scale-110 transition ease-in-out"><a href="/recettes">Recettes</a></li>
-                <li class="hover:text-tertiary hover:scale-110 transition ease-in-out"><a href="/regimes">Régimes</a></li>
+            <ul class="flex justify-between w-full md:text-lg lg:text-xl font-bold">
+                <li class="hover:opacity-100 opacity-70 hover:scale-110 transition ease-in-out"><a href="/aliments">Aliments</a></li>
+                <li class="hover:opacity-100 opacity-70 hover:scale-110 transition ease-in-out"><a href="/recettes">Recettes</a></li>
+                <li class="hover:opacity-100 opacity-70 hover:scale-110 transition ease-in-out"><a href="/regimes">Régimes</a></li>
             </ul>
         </div>
         <a href="/profil">
@@ -37,29 +40,66 @@ const { allHeader = false, titrePage } = Astro.props;
         </div>
     </header>
 ) : (
-    <header class="capitalize absolute font-montserrat mt-5 md:mt-5 flex items-center justify-between px-5 md:px-10 w-full">
+    <header id="main-header" style={`color: var(--color-${color})`} class="capitalize fixed top-0 font-montserrat mt-5 md:mt-5 flex items-center justify-between px-5 md:px-10 w-full z-40 transition-[transform,color] duration-300 ease-in-out">
         <div class="hidden md:flex items-center md:gap-10 lg:gap-20 mg:4/5 lg:w-3/5 xl:w-3/6 2xl:w-3/7">
-            <a href="/accueil">
-                <img src={Logo} alt="Logo Nura" class="h-25 hover:-rotate-2 transition ease-in-out">
+            <a href="/accueil" class="hover:-rotate-2 transition ease-in-out">
+                <Logo color={color} class="h-16 w-auto" />
             </a>
-            <ul class="flex justify-between w-full text-tertiary/80 md:text-lg lg:text-xl font-bold">
-                <li class="hover:text-tertiary hover:scale-110 transition ease-in-out"><a href="/aliments">Aliments</a></li>
-                <li class="hover:text-tertiary hover:scale-110 transition ease-in-out"><a href="/recettes">Recettes</a></li>
-                <li class="hover:text-tertiary hover:scale-110 transition ease-in-out"><a href="/regimes">Régimes</a></li>
+            <ul class="flex justify-between w-full md:text-lg lg:text-xl font-bold">
+                <li class="hover:opacity-100 opacity-70 hover:scale-110 transition ease-in-out"><a href="/aliments">Aliments</a></li>
+                <li class="hover:opacity-100 opacity-70 hover:scale-110 transition ease-in-out"><a href="/recettes">Recettes</a></li>
+                <li class="hover:opacity-100 opacity-70 hover:scale-110 transition ease-in-out"><a href="/regimes">Régimes</a></li>
             </ul>
         </div>
         <a href="/profil" class="flex items-center space-x-3">
             <img src={avatarUrl} alt="avatar" class="w-15 h-15 md:w-17 md:h-17 lg:w-20 lg:h-20 rounded-full hover:rotate-2 transition ease-in-out object-cover" />
-            <div class="flex-col md:hidden">
-                <div class="flex space-x-1 font-montserrat text-white text-xl">
-                    <p class="">{user?.prenom}</p>
-                    <p class="">{user?.nom}</p>
+            <div class="flex-col md:hidden -space-y-2">
+                <div class={`flex space-x-1 text-${colorMobile} font-montserrat text-xl`}>
+                    <p>{user?.prenom}</p>
+                    <p>{user?.nom}</p>
                 </div>
-                <p>{user?.objectif}</p>
+                <p class={`text-${color} uppercase font-montserrat text-2xl font-bold`}>{user?.objectif}</p>
             </div>
         </a>
         <div class="block md:hidden">
-            <Notifs />
+            <Notifs colorNotif={color} />
         </div>
     </header>
 )}
+
+<script>
+    const header = document.getElementById("main-header") as HTMLElement;
+    let lastScroll = 0;
+
+    window.addEventListener("scroll", () => {
+        const current = window.scrollY;
+        if (current > lastScroll && current > 80) {
+            header.style.transform = "translateY(-150%)";
+        } else {
+            header.style.transform = "translateY(0)";
+        }
+        lastScroll = current;
+    });
+
+    const colorMap: Record<string, string> = {
+        secondary: "var(--color-tertiary)",
+        tertiary:  "var(--color-primary)",
+        primary:   "var(--color-tertiary)",
+    };
+
+    const sections = document.querySelectorAll<HTMLElement>("[data-header-bg]");
+
+    const observer = new IntersectionObserver(
+        (entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    const bg = (entry.target as HTMLElement).dataset.headerBg ?? "secondary";
+                    header.style.color = colorMap[bg] ?? "var(--color-tertiary)";
+                }
+            });
+        },
+        { rootMargin: "0px 0px -90% 0px" }
+    );
+
+    sections.forEach((s) => observer.observe(s));
+</script>
