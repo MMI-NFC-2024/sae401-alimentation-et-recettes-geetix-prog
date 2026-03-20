@@ -155,7 +155,6 @@ if (request.method === "POST") {
                 {registerError && (
                     <p class="text-red-400 font-montserrat text-sm text-center">{registerError}</p>
                 )}
-                <!-- Avatar picker -->
                 <div class="flex flex-col items-center gap-2">
                     <button type="button" id="avatarBtn" class="w-20 h-20 rounded-full bg-tertiary border-2 border-tertiary overflow-hidden flex items-center justify-center text-3xl hover:opacity-80 transition-opacity">
                         <img id="avatarPreview" class="w-full h-full object-cover hidden" alt="avatar" />
@@ -243,7 +242,6 @@ if (request.method === "POST") {
         board.classList.remove("opacity-75");
     }
 
-    // Nettoie les query params de l'URL sans recharger la page
     if (window.location.search) {
         window.history.replaceState({}, "", window.location.pathname);
     }
@@ -256,7 +254,6 @@ if (request.method === "POST") {
         if (!logPanel.contains(t) && !regPanel.contains(t)) closePanels();
     });
 
-    // Avatar picker
     const avatarBtn     = document.getElementById("avatarBtn");
     const avatarInput   = document.getElementById("avatarInput") as HTMLInputElement;
     const avatarPreview = document.getElementById("avatarPreview") as HTMLImageElement;

@@ -1,0 +1,65 @@
+---
+import iconMaison from "../assets/icons/iconMaison.svg?url";
+import iconRecette from "../assets/icons/iconRecette.svg?url";
+import iconRegime from "../assets/icons/iconRegime.svg?url";
+
+interface Props {
+    currentPage?: string;
+}
+
+const { currentPage = "" } = Astro.props;
+
+const links = [
+    { href: "/accueil", label: "Accueil", icon: iconMaison },
+    { href: "/recettes", label: "Recette", icon: iconRecette },
+    { href: "/regimes", label: "Régime", icon: iconRegime },
+];
+---
+
+<nav aria-label="Navigation principale" class="md:hidden fixed bottom-0 left-0 right-0 z-50">
+    <ul class="bg-white rounded-t-[20px] flex items-center justify-around px-4 pb-5 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
+
+        <li>
+            <a href="/accueil" class={`flex flex-col items-center gap-1 hover:scale-110 transition ease-in-out ${currentPage === "/accueil" ? "opacity-100" : "opacity-40"}`}>
+                <img src={iconMaison} alt="Accueil" class="w-9 h-9 nav-icon" />
+            </a>
+        </li>
+
+        <li>
+            <a href="/recettes" class={`flex flex-col items-center gap-1 hover:scale-110 transition ease-in-out ${currentPage === "/recettes" ? "opacity-100" : "opacity-40"}`}>
+                <img src={iconRecette} alt="Recettes" class="w-9 h-9 nav-icon" />
+            </a>
+        </li>
+
+        <li>
+            <a href="/journal" aria-label="Journal" class="flex flex-col items-center -translate-y-5 hover:scale-110 transition ease-in-out">
+                <div class="w-14 h-14 rounded-full flex items-center justify-center shadow-lg" style="background-color: #D63384;">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="white" class="w-7 h-7">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                    </svg>
+                </div>
+            </a>
+        </li>
+
+        <li>
+            <a href="/regimes" class={`flex flex-col items-center gap-1 hover:scale-110 transition ease-in-out ${currentPage === "/regimes" ? "opacity-100" : "opacity-40"}`}>
+                <img src={iconRegime} alt="Régimes" class="w-9 h-9 nav-icon" />
+            </a>
+        </li>
+
+        <li>
+            <a href="/conseils" class={`flex flex-col items-center gap-1 hover:scale-110 transition ease-in-out ${currentPage === "/conseils" ? "opacity-100" : "opacity-40"}`}>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#D63384" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-9 h-9">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                </svg>
+            </a>
+        </li>
+
+    </ul>
+</nav>
+
+<style>
+    .nav-icon {
+        filter: invert(28%) sepia(89%) saturate(1200%) hue-rotate(300deg) brightness(90%) contrast(110%);
+    }
+</style>

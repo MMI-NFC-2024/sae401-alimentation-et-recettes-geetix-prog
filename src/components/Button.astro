@@ -19,8 +19,8 @@ const scales = {
 
 <a
     href={page.startsWith("/") ? null : `/${page}`}
-    style={`--btn-border: var(--color-${borderColor}); transform: scale(${scales[size]}); transform-origin: center;`}
-    class={`cursor-pointer inline-block bg-${bgClass} text-${colorClass} uppercase px-4 py-1.5 rounded-full font-modak text-sm shadow-[0_0_0_2px_var(--btn-border),2px_2px_0px_1px_var(--btn-border)] hover:scale-105 active:scale-95 transition-transform duration-150 ease-in text-center`}
+    style={`--btn-border: var(--color-${borderColor}); --btn-bg: var(--color-${bgClass}); --btn-color: var(--color-${colorClass}); transform: scale(${scales[size]}); transform-origin: center; background-color: var(--btn-bg); color: var(--btn-color);`}
+    class="cursor-pointer inline-block uppercase px-4 py-1.5 rounded-full font-modak text-sm shadow-[0_0_0_2px_var(--btn-border),2px_2px_0px_1px_var(--btn-border)] hover:scale-105 active:scale-95 transition-transform duration-150 ease-in text-center"
 >
     {text}
 </a>
