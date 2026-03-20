@@ -1,0 +1,45 @@
+---
+import { objectifs as tous } from "../data/objectifs.js";
+
+interface Props {
+    currentObjectif: string;
+}
+
+const { currentObjectif } = Astro.props;
+
+const objectifs = tous.filter((obj) => obj.value !== currentObjectif);
+---
+
+<div class="flex flex-col gap-3 w-full md:hidden">
+    {objectifs.map((obj) => (
+        <form method="POST" action="/api/update-objectif">
+            <input type="hidden" name="objectif" value={obj.value} />
+            <button type="submit" class="flex items-center justify-center gap-3 w-full px-5 py-3 rounded-2xl font-montserrat font-bold text-lg uppercase border-4 text-tertiary hover:scale-105 transition">
+                <img src={obj.iconLeft} alt="" class="w-7 h-7" />
+                <span>{obj.value}</span>
+                <img src={obj.iconRight} alt="" class="w-7 h-7" />
+            </button>
+        </form>
+    ))}
+</div>
+
+<div class="hidden md:grid md:grid-cols-3 gap-6 w-full">
+    {objectifs.map((obj) => (
+        <div class="flex flex-col items-center gap-4 p-6 rounded-3xl text-center">
+            <div class="flex items-center gap-2">
+                <img src={obj.iconLeft} alt="" class="w-10 h-10" />
+                <span class="font-modak uppercase text-tertiary text-xl sm:text-2xl lg:text-4xl">{obj.value}</span>
+                <img src={obj.iconRight} alt="" class="w-10 h-10" />
+            </div>
+            <div class="flex flex-col space-y-10">
+                <p class="font-montserrat font-normal italic text-tertiary/70 text-lg sm:text-xl lg:text-2xl">{obj.accroche}</p>
+                <form method="POST" action="/api/update-objectif" class="mt-auto">
+                    <input type="hidden" name="objectif" value={obj.value} />
+                    <button style="--btn-border: var(--color-tertiary); transform-origin: center;" type="submit" class="cursor-pointer inline-block w-1/2 bg-secondary text-tertiary uppercase px-4 py-1.5 rounded-full font-modak text-sm shadow-[0_0_0_2px_var(--btn-border),2px_2px_0px_1px_var(--btn-border)] hover:scale-150 active:scale-125 transition-transform duration-150 ease-in text-center scale-135">
+                        Choisir
+                    </button>
+                </form>
+            </div>
+        </div>
+    ))}
+</div>

@@ -8,6 +8,8 @@ import { getConseilDuJour } from "../composables/useConseilDuJour.js";
 import { getRecettesDuJour } from "../composables/getRecettesDuJour.js";
 import MobileLine from "../assets/icons/mobileLine.astro"
 import Button from "../components/Button.astro";
+import ObjectifLabel from "../components/ObjectifLabel.astro";
+import ObjectifSelector from "../components/ObjectifSelector.astro";
 
 const { locals,redirect } = Astro;
 
@@ -83,7 +85,12 @@ const recettesDuJour = await getRecettesDuJour(locals.pb);
     <div class="-mt-2 -mb-3 md:-mt-4 md:-mb-5 lg:-mt-6 lg:-mb-7 relative z-10">
         <MobileLine lineColor="tertiary" />
     </div>
-    <div class="bg-primary z-20 flex flex-col items-center py-20 px-5 sm:px-7 md:px-10 lg:px-30 gap-10">
-        <h2 class="font-modak text-tertiary text-4xl sm:text-5xl lg:text-6xl uppercase">changer ton objectif</h2>
+    <div class="bg-primary z-20 flex flex-col space-y-7 lg:space-y-10 items-center py-20 px-5 sm:px-7 md:px-10 lg:px-30">
+        <h2 class="font-modak text-tertiary text-4xl sm:text-5xl lg:text-6xl uppercase text-center">changer ton objectif</h2>
+        <h3 class="capitalize font-montserrat text-tertiary text-xl sm:text-2xl lg:text-3xl">Objectif Actuel :</h3>
+        <div class="flex flex-col gap-10 md:gap-15">
+            <ObjectifLabel objectif={user?.objectif} />
+            <ObjectifSelector currentObjectif={user?.objectif} />
+        </div>
     </div>
 </Layout>

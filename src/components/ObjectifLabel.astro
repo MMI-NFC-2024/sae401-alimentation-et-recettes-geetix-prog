@@ -1,0 +1,21 @@
+---
+import { objectifs } from "../data/objectifs.js";
+
+interface Props {
+    objectif: string;
+    class?: string;
+}
+
+const { objectif, class: className = "" } = Astro.props;
+
+const data = objectifs.find((o) => o.value === objectif);
+---
+
+<div class={`flex flex-col items-center gap-2 ${className}`}>
+    <span class="flex items-center gap-2">
+        {data && <img src={data.iconLeft} alt="" class="w-8 h-8" />}
+        <span class="uppercase font-montserrat text-tertiary font-black text-xl sm:text-2xl lg:text-4xl">{objectif}</span>
+        {data && <img src={data.iconRight} alt="" class="w-8 h-8" />}
+    </span>
+    {data && <p class="font-montserrat font-medium italic text-center text-tertiary/70 text-lg sm:text-2xl lg:text-3xl">{data.accroche}</p>}
+</div>
