@@ -1,10 +1,3 @@
-/**
- * Récupère les 3 recettes du jour.
- * Les recettes sont déterminées par : (numéro du jour dans l'année) % (nombre de recettes).
- *
- * @param {import('pocketbase').default} pb - Instance PocketBase
- * @returns {Promise<Array>} Les 3 recettes du jour
- */
 export async function getRecettesDuJour(pb) {
     const recettes = await pb.collection("Recettes").getFullList();
 

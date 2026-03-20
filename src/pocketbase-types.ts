@@ -1,7 +1,3 @@
-/**
-* This file was @generated using pocketbase-typegen
-*/
-
 import type PocketBase from 'pocketbase'
 import type { RecordService } from 'pocketbase'
 
@@ -20,7 +16,6 @@ export enum Collections {
 	Users = "users",
 }
 
-// Alias types for improved usability
 export type IsoDateString = string
 export type IsoAutoDateString = string & { readonly autodate: unique symbol }
 export type RecordIdString = string
@@ -33,7 +28,6 @@ type ExpandType<T> = unknown extends T
 		: { expand: T }
 	: { expand: T }
 
-// System fields
 export type BaseSystemFields<T = unknown> = {
 	id: RecordIdString
 	collectionId: string
@@ -46,8 +40,6 @@ export type AuthSystemFields<T = unknown> = {
 	username: string
 	verified: boolean
 } & BaseSystemFields<T>
-
-// Record types for each collection
 
 export enum AlimentsCategorieOptions {
 	"légume" = "légume",
@@ -195,7 +187,6 @@ export type UsersRecord = {
 	verified?: boolean
 }
 
-// Response types include system fields and match responses from the PocketBase API
 export type AlimentsResponse<Texpand = unknown> = Required<AlimentsRecord> & BaseSystemFields<Texpand>
 export type EtapesResponse<Texpand = unknown> = Required<EtapesRecord> & BaseSystemFields<Texpand>
 export type RecetteAlimentsResponse<Texpand = unknown> = Required<RecetteAlimentsRecord> & BaseSystemFields<Texpand>
@@ -208,8 +199,6 @@ export type MfasResponse<Texpand = unknown> = Required<MfasRecord> & BaseSystemF
 export type OtpsResponse<Texpand = unknown> = Required<OtpsRecord> & BaseSystemFields<Texpand>
 export type SuperusersResponse<Texpand = unknown> = Required<SuperusersRecord> & AuthSystemFields<Texpand>
 export type UsersResponse<Texpand = unknown> = Required<UsersRecord> & AuthSystemFields<Texpand>
-
-// Types containing all Records and Responses, useful for creating typing helper functions
 
 export type CollectionRecords = {
 	Aliments: AlimentsRecord
@@ -241,20 +230,15 @@ export type CollectionResponses = {
 	users: UsersResponse
 }
 
-// Utility types for create/update operations
-
 type ProcessCreateAndUpdateFields<T> = Omit<{
-	// Omit AutoDate fields
-	[K in keyof T as Extract<T[K], IsoAutoDateString> extends never ? K : never]: 
-		// Convert FileNameString to File
-		T[K] extends infer U ? 
+	[K in keyof T as Extract<T[K], IsoAutoDateString> extends never ? K : never]:
+		T[K] extends infer U ?
 			U extends (FileNameString | FileNameString[]) ? 
 				U extends any[] ? File[] : File 
 			: U
 		: never
 }, 'id'>
 
-// Create type for Auth collections
 export type CreateAuth<T> = {
 	id?: RecordIdString
 	email: string
@@ -264,12 +248,10 @@ export type CreateAuth<T> = {
 	verified?: boolean
 } & ProcessCreateAndUpdateFields<T>
 
-// Create type for Base collections
 export type CreateBase<T> = {
 	id?: RecordIdString
 } & ProcessCreateAndUpdateFields<T>
 
-// Update type for Auth collections
 export type UpdateAuth<T> = Partial<
 	Omit<ProcessCreateAndUpdateFields<T>, keyof AuthSystemFields>
 > & {
@@ -281,25 +263,19 @@ export type UpdateAuth<T> = Partial<
 	verified?: boolean
 }
 
-// Update type for Base collections
 export type UpdateBase<T> = Partial<
 	Omit<ProcessCreateAndUpdateFields<T>, keyof BaseSystemFields>
 >
 
-// Get the correct create type for any collection
 export type Create<T extends keyof CollectionResponses> =
 	CollectionResponses[T] extends AuthSystemFields
 		? CreateAuth<CollectionRecords[T]>
 		: CreateBase<CollectionRecords[T]>
 
-// Get the correct update type for any collection
 export type Update<T extends keyof CollectionResponses> =
 	CollectionResponses[T] extends AuthSystemFields
 		? UpdateAuth<CollectionRecords[T]>
 		: UpdateBase<CollectionRecords[T]>
-
-// Type for usage with type asserted PocketBase instance
-// https://github.com/pocketbase/js-sdk#specify-typescript-definitions
 
 export type TypedPocketBase = {
 	collection<T extends keyof CollectionResponses>(

@@ -1,11 +1,3 @@
-/**
- * Récupère le conseil du jour filtré par l'objectif de l'utilisateur.
- * Le conseil retourné est déterminé par : (numéro du jour dans l'année) % (nombre de conseils).
- *
- * @param {import('pocketbase').default} pb - Instance PocketBase
- * @param {string} objectif - Objectif de l'utilisateur connecté
- * @returns {Promise<string|null>} Le texte du conseil du jour, ou null si aucun conseil trouvé
- */
 export async function getConseilDuJour(pb, objectif) {
     if (!objectif) return null;
 
