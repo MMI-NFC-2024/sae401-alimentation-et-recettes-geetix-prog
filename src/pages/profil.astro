@@ -46,6 +46,12 @@ const avatarUrl = user?.avatar
             Voir les Mentions Légales / Politique de confidentialité
         </a>
 
+        <form method="POST" action="/api/logout">
+            <button type="submit" class="font-montserrat text-sm md:text-base text-dark/50 underline cursor-pointer">
+                Se déconnecter
+            </button>
+        </form>
+
     </div>
 
     <div id="edit-overlay" class="fixed inset-0 bg-black/50 z-40 hidden opacity-0 transition-opacity duration-300"></div>
@@ -238,6 +244,7 @@ const avatarUrl = user?.avatar
         if (!avatarFile || avatarFile.size === 0) formData.delete("avatar");
 
         const pwd = formData.get("password") as string;
+        const passwordChanged = !!pwd;
         if (!pwd) {
             formData.delete("password");
             formData.delete("passwordConfirm");
@@ -265,12 +272,33 @@ const avatarUrl = user?.avatar
                 if (nameEl) nameEl.textContent = `${prenom} ${nom}`.toUpperCase();
 
                 const objectifEl = document.getElementById("profile-objectif");
-                if (objectifEl) objectifEl.textContent = objectif;
+                if (objectifEl && objectif) objectifEl.textContent = objectif;
 
-                const profileAvatar = document.getElementById("profile-avatar") as HTMLImageElement | null;
-                if (profileAvatar && avatarPreview.src) profileAvatar.src = avatarPreview.src;
+                const newAvatarFile = formData.get("avatar") as File | null;
+                if (newAvatarFile && newAvatarFile.size > 0) {
+                    let profileAvatar = document.getElementById("profile-avatar") as HTMLImageElement | null;
+                    const fallback = document.getElementById("profile-avatar-fallback");
+                    if (!profileAvatar) {
+                        profileAvatar = document.createElement("img");
+                        profileAvatar.id = "profile-avatar";
+                        profileAvatar.alt = "avatar";
+                        profileAvatar.className = "w-full h-full object-cover";
+                        document.getElementById("profile-avatar-wrapper")?.appendChild(profileAvatar);
+                    }
+                    profileAvatar.src = avatarPreview.src;
+                    profileAvatar.classList.remove("hidden");
+                    fallback?.classList.add("hidden");
+                }
 
-                setTimeout(closePanel, 1200);
+                if (passwordChanged) {
+                    message.textContent = "Mot de passe modifié. Redirection...";
+                    setTimeout(async () => {
+                        await fetch("/api/logout", { method: "POST" });
+                        window.location.href = "/";
+                    }, 1500);
+                } else {
+                    setTimeout(closePanel, 1200);
+                }
             }
         } catch {
             message.textContent = "Erreur réseau, réessaye.";
