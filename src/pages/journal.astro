@@ -1,0 +1,369 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Loupe from "../assets/icons/iconLoupe.svg?url";
+
+const { locals, redirect } = Astro;
+
+if (!locals.pb.authStore.isValid) return redirect("/");
+
+const user = locals.pb.authStore.record;
+const pbUrl = import.meta.env.POCKETBASE_URL;
+
+const today = new Date().toISOString().split("T")[0];
+
+const entries = await locals.pb.collection("Journal").getFullList({
+    filter: `user = "${user.id}" && date >= "${today} 00:00:00" && date <= "${today} 23:59:59"`,
+    expand: "aliment",
+    sort: "-date",
+    requestKey: null,
+});
+
+const OBJECTIFS = { calories: 1850, proteines: 120, glucides: 250, lipides: 90 };
+
+const totaux = entries.reduce((acc: any, e: any) => {
+    const a = e.expand?.aliment;
+    if (!a) return acc;
+    const q = e.quantite / 100;
+    acc.calories  += a.calories  * q;
+    acc.proteines += a.proteines * q;
+    acc.glucides  += a.glucides  * q;
+    acc.lipides   += a.lipides   * q;
+    return acc;
+}, { calories: 0, proteines: 0, glucides: 0, lipides: 0 });
+
+Object.keys(totaux).forEach(k => { totaux[k] = Math.round(totaux[k]); });
+
+function pct(val: number, obj: number) {
+    return Math.min(100, Math.round((val / obj) * 100));
+}
+
+function circle(val: number, obj: number, color: string) {
+    const r = 28;
+    const circ = 2 * Math.PI * r;
+    const dash = (pct(val, obj) / 100) * circ;
+    return { r, circ, dash, gap: circ - dash, color };
+}
+
+const cards = [
+    { label: "Calories",  valeur: totaux.calories,  obj: OBJECTIFS.calories,  unite: "kcal", ...circle(totaux.calories,  OBJECTIFS.calories,  "#CE2F7D") },
+    { label: "Protéines", valeur: totaux.proteines, obj: OBJECTIFS.proteines, unite: "g",    ...circle(totaux.proteines, OBJECTIFS.proteines, "#00522D") },
+    { label: "Glucides",  valeur: totaux.glucides,  obj: OBJECTIFS.glucides,  unite: "g",    ...circle(totaux.glucides,  OBJECTIFS.glucides,  "#CE2F7D") },
+    { label: "Lipides",   valeur: totaux.lipides,   obj: OBJECTIFS.lipides,   unite: "g",    ...circle(totaux.lipides,   OBJECTIFS.lipides,   "#00522D") },
+];
+---
+
+<Layout showHeader titrePage="Journal">
+<div
+    id="journal-root"
+    data-pb-url={pbUrl}
+    data-user-id={user.id}
+    data-today={today}
+    class="min-h-screen bg-secondary flex flex-col lg:flex-row pt-30 md:pt-35 pb-50 gap-16 px-5 sm:px-7 md:px-10 lg:px-20 gap-10 lg:gap-8"
+>
+
+    <div class="flex flex-col gap-6 lg:w-1/2 order-2 lg:order-1">
+        <h1 class="font-modak text-tertiary text-center md:text-start text-4xl sm:text-5xl uppercase">Journal alimentaire</h1>
+
+        <div id="cards-container" class="flex flex-col gap-4">
+            {cards.map((c) => (
+                <div class="bg-tertiary rounded-full px-6 py-4 flex items-center gap-5">
+                    <svg width="72" height="72" viewBox="0 0 72 72" class="shrink-0">
+                        <circle cx="36" cy="36" r={c.r} fill="none" stroke="#00000015" stroke-width="8" />
+                        <circle
+                            cx="36" cy="36" r={c.r} fill="none"
+                            stroke={c.color} stroke-width="8"
+                            stroke-dasharray={`${c.dash} ${c.gap}`}
+                            stroke-linecap="round"
+                            transform="rotate(-90 36 36)"
+                        />
+                        <text x="36" y="40" text-anchor="middle" font-size="11" font-weight="bold" fill="#363636">{pct(c.valeur, c.obj)}%</text>
+                    </svg>
+                    <div class="flex flex-col">
+                        <span class="font-montserrat text-dark text-sm">{c.label}</span>
+                        <span class="font-modak text-dark text-2xl">{c.valeur} {c.unite}</span>
+                        <span class="font-montserrat text-dark/60 text-xs">Consommé{c.label === "Calories" ? "es" : "s"} aujourd'hui</span>
+                        <span class="font-montserrat text-dark text-xs font-bold">{Math.max(0, c.obj - c.valeur)} {c.unite} restant{c.label === "Calories" ? "es" : "s"}</span>
+                    </div>
+                </div>
+            ))}
+        </div>
+    </div>
+
+    <div class="flex flex-col gap-6 lg:w-1/2 order-1 lg:order-2">
+        <h2 class="font-modak text-tertiary text-4xl text-center md:text-start sm:text-5xl uppercase">Consommation du jour</h2>
+
+        <div class="relative">
+            <input
+                id="search-aliment"
+                type="text"
+                placeholder="Qu'avez-vous mangé ?"
+                class="w-full bg-tertiary rounded-full px-6 py-3 font-montserrat text-dark placeholder-dark/50 outline-none focus:ring-2 focus:ring-primary pr-12"
+            />
+            <img src={Loupe} alt="rechercher" class="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none" />
+
+            <div id="search-results" class="absolute top-full left-0 right-0 mt-2 bg-tertiary rounded-2xl overflow-hidden z-20 hidden shadow-lg">
+                <ul id="search-list" class="flex flex-col divide-y divide-dark/10"></ul>
+            </div>
+        </div>
+
+        <div id="quantite-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center">
+            <div class="absolute inset-0 bg-black/50" id="modal-overlay"></div>
+            <div class="relative bg-tertiary rounded-3xl p-8 flex flex-col gap-5 w-80 z-10">
+                <h3 class="font-modak text-secondary text-2xl uppercase text-center">Quantité</h3>
+                <p id="modal-aliment-name" class="font-montserrat text-dark text-center text-sm"></p>
+                <div class="flex items-center gap-3">
+                    <input
+                        id="modal-quantite"
+                        type="number"
+                        value="100"
+                        min="1"
+                        class="flex-1 bg-white/50 border border-dark/20 rounded-xl px-4 py-3 font-montserrat text-dark text-center focus:outline-none"
+                    />
+                    <span class="font-montserrat text-dark font-bold">g</span>
+                </div>
+                <div class="flex gap-3">
+                    <button id="modal-cancel" class="flex-1 font-modak uppercase text-base border-2 border-secondary text-secondary py-3 rounded-full">Annuler</button>
+                    <button id="modal-confirm" class="flex-1 font-modak uppercase text-base bg-secondary text-tertiary py-3 rounded-full">Ajouter</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="entries-list" class="flex flex-col gap-3">
+            {entries.length === 0 && (
+                <p id="empty-msg" class="font-montserrat text-tertiary/60 text-sm italic text-center">Aucun aliment ajouté aujourd'hui.</p>
+            )}
+            {entries.map((e: any) => {
+                const a = e.expand?.aliment;
+                if (!a) return null;
+                const imageUrl = a.image ? `${pbUrl}/api/files/${a.collectionId}/${a.id}/${a.image}` : null;
+                const kcal = Math.round(a.calories * e.quantite / 100);
+                return (
+                    <div class="bg-tertiary rounded-full px-5 py-3 flex items-center gap-4" data-entry-id={e.id}>
+                        <div class="w-12 h-12 rounded-full overflow-hidden shrink-0 bg-secondary/20 flex items-center justify-center">
+                            {imageUrl
+                                ? <img src={imageUrl} alt={a.nom} class="w-full h-full object-cover" />
+                                : <span class="text-2xl">🥗</span>
+                            }
+                        </div>
+                        <div class="flex flex-col flex-1 min-w-0">
+                            <span class="font-montserrat font-bold text-primary truncate">{e.quantite}g {a.nom}</span>
+                            <span class="font-montserrat text-dark/70 text-sm">{kcal} kcal</span>
+                        </div>
+                        <button class="btn-delete shrink-0 text-dark/40 hover:text-primary transition" data-id={e.id} aria-label="Supprimer">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        </button>
+                    </div>
+                );
+            })}
+        </div>
+    </div>
+</div>
+</Layout>
+
+<script>
+    const pbUrl      = (document.getElementById("journal-root") as HTMLElement).dataset.pbUrl!;
+    const userId     = (document.getElementById("journal-root") as HTMLElement).dataset.userId!;
+    const searchInput = document.getElementById("search-aliment") as HTMLInputElement;
+    const searchResults = document.getElementById("search-results")!;
+    const searchList  = document.getElementById("search-list")!;
+    const entriesList = document.getElementById("entries-list")!;
+    const modal       = document.getElementById("quantite-modal")!;
+    const modalOverlay = document.getElementById("modal-overlay")!;
+    const modalName   = document.getElementById("modal-aliment-name")!;
+    const modalQty    = document.getElementById("modal-quantite") as HTMLInputElement;
+    const modalCancel = document.getElementById("modal-cancel")!;
+    const modalConfirm = document.getElementById("modal-confirm")!;
+
+    const OBJECTIFS = { calories: 1850, proteines: 120, glucides: 250, lipides: 90 };
+
+    let selectedAliment: any = null;
+    let debounceTimer: any;
+
+    searchInput.addEventListener("input", () => {
+        clearTimeout(debounceTimer);
+        const q = searchInput.value.trim();
+        if (!q) { searchResults.classList.add("hidden"); return; }
+        debounceTimer = setTimeout(() => searchAliments(q), 300);
+    });
+
+    document.addEventListener("click", (e) => {
+        if (!searchResults.contains(e.target as Node) && e.target !== searchInput) {
+            searchResults.classList.add("hidden");
+        }
+    });
+
+    async function searchAliments(q: string) {
+        const res = await fetch(`/api/aliments-search?q=${encodeURIComponent(q)}`);
+        const items = await res.json();
+        searchList.innerHTML = "";
+        if (!items.length) {
+            searchList.innerHTML = `<li class="px-5 py-3 font-montserrat text-dark/50 text-sm italic">Aucun résultat</li>`;
+        } else {
+            items.forEach((a: any) => {
+                const li = document.createElement("li");
+                li.className = "px-5 py-3 font-montserrat text-dark text-sm cursor-pointer hover:bg-dark/10 flex justify-between items-center";
+                li.innerHTML = `<span class="font-bold">${a.nom}</span><span class="text-dark/50">${a.calories} kcal/100g</span>`;
+                li.addEventListener("click", () => openModal(a));
+                searchList.appendChild(li);
+            });
+        }
+        searchResults.classList.remove("hidden");
+    }
+
+    function openModal(aliment: any) {
+        selectedAliment = aliment;
+        modalName.textContent = `${aliment.nom} — ${aliment.calories} kcal / 100g`;
+        modalQty.value = "100";
+        modal.classList.remove("hidden");
+        searchResults.classList.add("hidden");
+        searchInput.value = "";
+    }
+
+    function closeModal() {
+        modal.classList.add("hidden");
+        selectedAliment = null;
+    }
+
+    modalCancel.addEventListener("click", closeModal);
+    modalOverlay.addEventListener("click", closeModal);
+
+    modalConfirm.addEventListener("click", async () => {
+        if (!selectedAliment) return;
+        const qty = parseInt(modalQty.value);
+        if (!qty || qty < 1) return;
+
+        const res = await fetch("/api/journal-add", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ alimentId: selectedAliment.id, quantite: qty }),
+        });
+
+        if (res.ok) {
+            const entry = await res.json();
+            addEntryToDOM(entry);
+            updateCards(entry.expand?.aliment, qty, 1);
+            closeModal();
+            document.getElementById("empty-msg")?.remove();
+        }
+    });
+
+    entriesList.addEventListener("click", async (e) => {
+        const btn = (e.target as HTMLElement).closest(".btn-delete") as HTMLElement | null;
+        if (!btn) return;
+        const id = btn.dataset.id!;
+        const card = btn.closest("[data-entry-id]") as HTMLElement;
+
+        const res = await fetch("/api/journal-delete", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id }),
+        });
+
+        if (res.ok) {
+            card.remove();
+            if (!entriesList.querySelector("[data-entry-id]")) {
+                entriesList.innerHTML = `<p id="empty-msg" class="font-montserrat text-tertiary/60 text-sm italic text-center">Aucun aliment ajouté aujourd'hui.</p>`;
+            }
+            recalculateTotals();
+        }
+    });
+
+    function addEntryToDOM(entry: any) {
+        const a = entry.expand?.aliment;
+        if (!a) return;
+        const qty = entry.quantite;
+        const kcal = Math.round(a.calories * qty / 100);
+        const imageUrl = a.image ? `${pbUrl}/api/files/${a.collectionId}/${a.id}/${a.image}` : null;
+
+        const div = document.createElement("div");
+        div.className = "bg-tertiary rounded-full px-5 py-3 flex items-center gap-4";
+        div.dataset.entryId = entry.id;
+        div.innerHTML = `
+            <div class="w-12 h-12 rounded-full overflow-hidden shrink-0 bg-secondary/20 flex items-center justify-center">
+                ${imageUrl ? `<img src="${imageUrl}" alt="${a.nom}" class="w-full h-full object-cover">` : `<span class="text-2xl">🥗</span>`}
+            </div>
+            <div class="flex flex-col flex-1 min-w-0">
+                <span class="font-montserrat font-bold text-primary truncate">${qty}g ${a.nom}</span>
+                <span class="font-montserrat text-dark/70 text-sm">${kcal} kcal</span>
+            </div>
+            <button class="btn-delete shrink-0 text-dark/40 hover:text-primary transition" data-id="${entry.id}" aria-label="Supprimer">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+            </button>
+        `;
+        entriesList.prepend(div);
+    }
+
+    function updateCards(aliment: any, qty: number, sign: 1 | -1) {
+        if (!aliment) return;
+        const q = qty / 100;
+        const delta = {
+            calories:  Math.round(aliment.calories  * q) * sign,
+            proteines: Math.round(aliment.proteines * q) * sign,
+            glucides:  Math.round(aliment.glucides  * q) * sign,
+            lipides:   Math.round(aliment.lipides   * q) * sign,
+        };
+        const cards = document.querySelectorAll("#cards-container > div");
+        const keys = ["calories", "proteines", "glucides", "lipides"] as const;
+        const unites = ["kcal", "g", "g", "g"];
+
+        cards.forEach((card, i) => {
+            const key = keys[i];
+            const valEl = card.querySelectorAll(".font-modak")[0] as HTMLElement;
+            const restEl = card.querySelectorAll(".font-montserrat")[2] as HTMLElement;
+            const svgCircle = card.querySelectorAll("circle")[1] as SVGCircleElement;
+            const svgText = card.querySelector("text") as SVGTextElement;
+
+            const current = parseInt(valEl.textContent ?? "0");
+            const newVal = Math.max(0, current + delta[key]);
+            const obj = OBJECTIFS[key];
+            const reste = Math.max(0, obj - newVal);
+            const p = Math.min(100, Math.round((newVal / obj) * 100));
+
+            valEl.textContent = `${newVal} ${unites[i]}`;
+            restEl.textContent = `${reste} ${unites[i]} restant${key === "calories" ? "es" : "s"}`;
+
+            const r = 28;
+            const circ = 2 * Math.PI * r;
+            const dash = (p / 100) * circ;
+            svgCircle.setAttribute("stroke-dasharray", `${dash} ${circ - dash}`);
+            svgText.textContent = `${p}%`;
+        });
+    }
+
+    async function recalculateTotals() {
+        const today = (document.getElementById("journal-root") as HTMLElement).dataset.today!;
+        const res = await fetch(`/api/journal-today?today=${today}`);
+        if (!res.ok) return;
+        const { totaux } = await res.json();
+
+        const cards = document.querySelectorAll("#cards-container > div");
+        const keys = ["calories", "proteines", "glucides", "lipides"] as const;
+        const unites = ["kcal", "g", "g", "g"];
+
+        cards.forEach((card, i) => {
+            const key = keys[i];
+            const valEl = card.querySelectorAll(".font-modak")[0] as HTMLElement;
+            const restEl = card.querySelectorAll(".font-montserrat")[2] as HTMLElement;
+            const svgCircle = card.querySelectorAll("circle")[1] as SVGCircleElement;
+            const svgText = card.querySelector("text") as SVGTextElement;
+
+            const val = totaux[key] ?? 0;
+            const obj = OBJECTIFS[key];
+            const reste = Math.max(0, obj - val);
+            const p = Math.min(100, Math.round((val / obj) * 100));
+
+            valEl.textContent = `${val} ${unites[i]}`;
+            restEl.textContent = `${reste} ${unites[i]} restant${key === "calories" ? "es" : "s"}`;
+
+            const r = 28;
+            const circ = 2 * Math.PI * r;
+            const dash = (p / 100) * circ;
+            svgCircle.setAttribute("stroke-dasharray", `${dash} ${circ - dash}`);
+            svgText.textContent = `${p}%`;
+        });
+    }
+</script>
