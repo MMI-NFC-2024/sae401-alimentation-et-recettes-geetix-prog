@@ -1,0 +1,284 @@
+---
+import Layout from "../layouts/Layout.astro";
+
+const { locals, redirect } = Astro;
+
+if (!locals.pb.authStore.isValid) return redirect("/");
+
+const user = locals.pb.authStore.record;
+const avatarUrl = user?.avatar
+    ? locals.pb.files.getURL(user, user.avatar)
+    : null;
+---
+
+<Layout showHeader titrePage="Profil">
+    <div class="min-h-screen bg-tertiary flex flex-col items-center pt-32 md:pt-44 pb-32 md:pb-50 px-6 gap-8 md:gap-12">
+
+        <div id="profile-avatar-wrapper" class="w-32 h-32 md:w-52 md:h-52 rounded-full border-4 border-secondary overflow-hidden flex-shrink-0">
+            {avatarUrl ? (
+                <img id="profile-avatar" src={avatarUrl} alt="avatar" class="w-full h-full object-cover" />
+            ) : (
+                <div id="profile-avatar-fallback" class="w-full h-full flex items-center justify-center bg-secondary/20">
+                    <span class="font-modak text-4xl md:text-7xl text-secondary">
+                        {user?.prenom?.[0]?.toUpperCase()}
+                    </span>
+                </div>
+            )}
+        </div>
+
+        <h1 id="profile-name" class="font-modak text-4xl md:text-6xl uppercase text-center leading-tight text-secondary">
+            {user?.prenom} {user?.nom}
+        </h1>
+
+        <div class="w-full max-w-sm md:max-w-lg flex flex-col gap-3 md:gap-4 font-montserrat text-dark text-base md:text-xl">
+            <p><span class="font-bold">Email :</span> {user?.email}</p>
+            <p><span class="font-bold">Objectif :</span> <span id="profile-objectif">{user?.objectif}</span></p>
+        </div>
+
+        <button
+            id="btn-open-edit"
+            class="font-modak uppercase text-lg md:text-2xl text-white px-10 md:px-16 py-3 md:py-4 rounded-full cursor-pointer bg-secondary"
+        >
+            MODIFIER MES INFOS
+        </button>
+
+        <a href="/mentions" class="font-montserrat text-sm md:text-base text-dark underline text-center">
+            Voir les Mentions Légales / Politique de confidentialité
+        </a>
+
+    </div>
+
+    <div id="edit-overlay" class="fixed inset-0 bg-black/50 z-40 hidden opacity-0 transition-opacity duration-300"></div>
+
+    <div
+        id="edit-panel"
+        class="fixed z-50 bg-secondary pt-6 pb-30 px-6 flex flex-col gap-5 overflow-y-auto transition-[transform,opacity] duration-300 ease-in-out
+               bottom-0 left-0 right-0 max-h-[90dvh] rounded-t-3xl translate-y-full
+               md:inset-0 md:m-auto md:h-fit md:max-h-[85dvh] md:w-[600px] md:rounded-3xl md:translate-y-0 md:opacity-0 md:pointer-events-none"
+    >
+        <div class="w-12 h-1 rounded-full bg-white/40 mx-auto mb-1 md:hidden"></div>
+
+        <h2 class="font-modak text-2xl uppercase text-white text-center">Modifier mes infos</h2>
+
+        <p id="edit-message" class="font-montserrat text-sm text-center hidden"></p>
+
+        <form id="edit-form" class="flex flex-col gap-4">
+
+            <div class="flex flex-col items-center gap-3">
+                <div class="w-24 h-24 rounded-full overflow-hidden border-2 border-white/60">
+                    <img id="avatar-preview" src={avatarUrl ?? ""} alt="aperçu avatar" class={`w-full h-full object-cover ${!avatarUrl ? "hidden" : ""}`} />
+                    <div id="avatar-fallback" class={`w-full h-full flex items-center justify-center bg-white/20 ${avatarUrl ? "hidden" : ""}`}>
+                        <span class="font-modak text-3xl text-white">{user?.prenom?.[0]?.toUpperCase()}</span>
+                    </div>
+                </div>
+                <label class="font-montserrat text-white/80 text-sm cursor-pointer underline">
+                    Changer la photo
+                    <input id="avatar-input" type="file" name="avatar" accept="image/*" class="hidden" />
+                </label>
+            </div>
+
+            <div class="flex flex-col gap-1">
+                <label class="font-montserrat text-white/80 text-xs uppercase font-bold">Prénom</label>
+                <input
+                    type="text"
+                    name="prenom"
+                    value={user?.prenom ?? ""}
+                    class="font-montserrat bg-white/10 border border-white/30 rounded-xl px-4 py-3 text-white placeholder-white/40 focus:outline-none focus:border-white"
+                    placeholder="Prénom"
+                    required
+                />
+            </div>
+
+            <div class="flex flex-col gap-1">
+                <label class="font-montserrat text-white/80 text-xs uppercase font-bold">Nom</label>
+                <input
+                    type="text"
+                    name="nom"
+                    value={user?.nom ?? ""}
+                    class="font-montserrat bg-white/10 border border-white/30 rounded-xl px-4 py-3 text-white placeholder-white/40 focus:outline-none focus:border-white"
+                    placeholder="Nom"
+                    required
+                />
+            </div>
+
+            <div class="flex flex-col gap-1">
+                <label class="font-montserrat text-white/80 text-xs uppercase font-bold">Objectif</label>
+                <select
+                    name="objectif"
+                    class="font-montserrat bg-white/10 border border-white/30 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-white"
+                >
+                    {["prendre de la masse", "perdre du poids", "manger sain", "booster son énergie"].map((o) => (
+                        <option value={o} selected={user?.objectif === o} class="text-dark bg-white">{o}</option>
+                    ))}
+                </select>
+            </div>
+
+            <div class="flex items-center gap-3 mt-1">
+                <div class="flex-1 h-px bg-white/20"></div>
+                <span class="font-montserrat text-white/50 text-xs">Changer le mot de passe (optionnel)</span>
+                <div class="flex-1 h-px bg-white/20"></div>
+            </div>
+
+            <div class="flex flex-col gap-1">
+                <label class="font-montserrat text-white/80 text-xs uppercase font-bold">Ancien mot de passe</label>
+                <input
+                    type="password"
+                    name="oldPassword"
+                    class="font-montserrat bg-white/10 border border-white/30 rounded-xl px-4 py-3 text-white placeholder-white/40 focus:outline-none focus:border-white"
+                    placeholder="••••••••"
+                    autocomplete="current-password"
+                />
+            </div>
+
+            <div class="flex flex-col gap-1">
+                <label class="font-montserrat text-white/80 text-xs uppercase font-bold">Nouveau mot de passe</label>
+                <input
+                    type="password"
+                    name="password"
+                    class="font-montserrat bg-white/10 border border-white/30 rounded-xl px-4 py-3 text-white placeholder-white/40 focus:outline-none focus:border-white"
+                    placeholder="••••••••"
+                    autocomplete="new-password"
+                />
+            </div>
+
+            <div class="flex flex-col gap-1">
+                <label class="font-montserrat text-white/80 text-xs uppercase font-bold">Confirmer le mot de passe</label>
+                <input
+                    type="password"
+                    name="passwordConfirm"
+                    class="font-montserrat bg-white/10 border border-white/30 rounded-xl px-4 py-3 text-white placeholder-white/40 focus:outline-none focus:border-white"
+                    placeholder="••••••••"
+                    autocomplete="new-password"
+                />
+            </div>
+
+            <div class="flex gap-3 mt-2">
+                <button
+                    type="button"
+                    id="btn-cancel-edit"
+                    class="flex-1 font-modak uppercase text-base border-2 border-white text-white py-3 rounded-full"
+                >
+                    ANNULER
+                </button>
+                <button
+                    type="submit"
+                    id="btn-submit-edit"
+                    class="flex-1 font-modak uppercase text-base py-3 rounded-full bg-tertiary text-secondary"
+                >
+                    ENREGISTRER
+                </button>
+            </div>
+
+        </form>
+    </div>
+</Layout>
+
+<script>
+    const overlay = document.getElementById("edit-overlay")!;
+    const panel = document.getElementById("edit-panel")!;
+    const btnOpen = document.getElementById("btn-open-edit")!;
+    const btnCancel = document.getElementById("btn-cancel-edit")!;
+    const form = document.getElementById("edit-form") as HTMLFormElement;
+    const message = document.getElementById("edit-message")!;
+    const avatarInput = document.getElementById("avatar-input") as HTMLInputElement;
+    const avatarPreview = document.getElementById("avatar-preview") as HTMLImageElement;
+    const avatarFallback = document.getElementById("avatar-fallback");
+
+    const isDesktop = () => window.matchMedia("(min-width: 768px)").matches;
+
+    function openPanel() {
+        overlay.classList.remove("hidden");
+        requestAnimationFrame(() => {
+            overlay.classList.remove("opacity-0");
+            if (isDesktop()) {
+                panel.classList.remove("md:opacity-0", "md:pointer-events-none");
+            } else {
+                panel.classList.remove("translate-y-full");
+            }
+        });
+        document.body.style.overflow = "hidden";
+    }
+
+    function closePanel() {
+        overlay.classList.add("opacity-0");
+        if (isDesktop()) {
+            panel.classList.add("md:opacity-0", "md:pointer-events-none");
+        } else {
+            panel.classList.add("translate-y-full");
+        }
+        setTimeout(() => {
+            overlay.classList.add("hidden");
+            document.body.style.overflow = "";
+            message.classList.add("hidden");
+        }, 300);
+    }
+
+    btnOpen.addEventListener("click", openPanel);
+    btnCancel.addEventListener("click", closePanel);
+    overlay.addEventListener("click", closePanel);
+
+    avatarInput.addEventListener("change", () => {
+        const file = avatarInput.files?.[0];
+        if (!file) return;
+        avatarPreview.src = URL.createObjectURL(file);
+        avatarPreview.classList.remove("hidden");
+        avatarFallback?.classList.add("hidden");
+    });
+
+    form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const btn = document.getElementById("btn-submit-edit") as HTMLButtonElement;
+        btn.disabled = true;
+        btn.textContent = "...";
+
+        const formData = new FormData(form);
+
+        const avatarFile = formData.get("avatar") as File;
+        if (!avatarFile || avatarFile.size === 0) formData.delete("avatar");
+
+        const pwd = formData.get("password") as string;
+        if (!pwd) {
+            formData.delete("password");
+            formData.delete("passwordConfirm");
+            formData.delete("oldPassword");
+        }
+
+        try {
+            const res = await fetch("/api/update-profile", { method: "POST", body: formData });
+            const json = await res.json();
+
+            if (!res.ok) {
+                message.textContent = json.error ?? "Une erreur est survenue";
+                message.className = "font-montserrat text-sm text-center text-red-300";
+                message.classList.remove("hidden");
+            } else {
+                message.textContent = "Modifications enregistrées !";
+                message.className = "font-montserrat text-sm text-center text-white";
+                message.classList.remove("hidden");
+
+                const prenom = formData.get("prenom") as string;
+                const nom = formData.get("nom") as string;
+                const objectif = formData.get("objectif") as string;
+
+                const nameEl = document.getElementById("profile-name");
+                if (nameEl) nameEl.textContent = `${prenom} ${nom}`.toUpperCase();
+
+                const objectifEl = document.getElementById("profile-objectif");
+                if (objectifEl) objectifEl.textContent = objectif;
+
+                const profileAvatar = document.getElementById("profile-avatar") as HTMLImageElement | null;
+                if (profileAvatar && avatarPreview.src) profileAvatar.src = avatarPreview.src;
+
+                setTimeout(closePanel, 1200);
+            }
+        } catch {
+            message.textContent = "Erreur réseau, réessaye.";
+            message.className = "font-montserrat text-sm text-center text-red-300";
+            message.classList.remove("hidden");
+        }
+
+        btn.disabled = false;
+        btn.textContent = "ENREGISTRER";
+    });
+</script>

@@ -16,8 +16,8 @@ interface Props {
 
 const { allHeader = false, titrePage } = Astro.props;
 
-const color = (titrePage === "Recettes" || titrePage === "Mentions") ? "secondary" : "tertiary";
-const colorMobile = (titrePage === "Recettes" || titrePage === "Mentions") ? "dark" : "white";
+const color = (titrePage === "Recettes" || titrePage === "Mentions" || titrePage === "Profil") ? "secondary" : "tertiary";
+const colorMobile = (titrePage === "Recettes" || titrePage === "Mentions" || titrePage === "Profil") ? "dark" : "white";
 ---
 
 {titrePage === "Accueil" ? (
