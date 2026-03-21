@@ -17,7 +17,7 @@ interface Props {
 const { allHeader = false, titrePage } = Astro.props;
 
 const color = (titrePage === "Recettes" || titrePage === "Mentions" || titrePage === "Profil") ? "secondary" : "tertiary";
-const colorMobile = (titrePage === "Recettes" || titrePage === "Mentions" || titrePage === "Profil") ? "dark" : "white";
+const colorMobile = (titrePage === "Recettes" || titrePage === "Mentions" || titrePage === "Profil" || titrePage === "Journal") ? "dark" : "white";
 ---
 
 {titrePage === "Accueil" ? (
@@ -27,7 +27,7 @@ const colorMobile = (titrePage === "Recettes" || titrePage === "Mentions" || tit
                 <Logo color={color} class="h-16 w-auto" />
             </a>
             <ul class="flex justify-between w-full md:text-lg lg:text-xl font-bold">
-                <li class="hover:opacity-100 opacity-70 hover:scale-110 transition ease-in-out"><a href="/aliments">Aliments</a></li>
+                <li class="hover:opacity-100 opacity-70 hover:scale-110 transition ease-in-out"><a href="/journal">Journal</a></li>
                 <li class="hover:opacity-100 opacity-70 hover:scale-110 transition ease-in-out"><a href="/recettes">Recettes</a></li>
                 <li class="hover:opacity-100 opacity-70 hover:scale-110 transition ease-in-out"><a href="/regimes">Régimes</a></li>
             </ul>
@@ -46,7 +46,7 @@ const colorMobile = (titrePage === "Recettes" || titrePage === "Mentions" || tit
                 <Logo color={color} class="h-16 w-auto" />
             </a>
             <ul class="flex justify-between w-full md:text-lg lg:text-xl font-bold">
-                <li class="hover:opacity-100 opacity-70 hover:scale-110 transition ease-in-out"><a href="/aliments">Aliments</a></li>
+                <li class="hover:opacity-100 opacity-70 hover:scale-110 transition ease-in-out"><a href="/journal">Journal</a></li>
                 <li class="hover:opacity-100 opacity-70 hover:scale-110 transition ease-in-out"><a href="/recettes">Recettes</a></li>
                 <li class="hover:opacity-100 opacity-70 hover:scale-110 transition ease-in-out"><a href="/regimes">Régimes</a></li>
             </ul>
