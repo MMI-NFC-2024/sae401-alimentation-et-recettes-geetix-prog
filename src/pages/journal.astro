@@ -24,10 +24,10 @@ const totaux = entries.reduce((acc: any, e: any) => {
     const a = e.expand?.aliment;
     if (!a) return acc;
     const q = e.quantite / 100;
-    acc.calories  += a.calories  * q;
-    acc.proteines += a.proteines * q;
-    acc.glucides  += a.glucides  * q;
-    acc.lipides   += a.lipides   * q;
+    acc.calories += a.calories * q;
+    acc. += a.proteines * q;
+    acc.glucides += a.glucides * q;
+    acc.lipides += a.lipides * q;
     return acc;
 }, { calories: 0, proteines: 0, glucides: 0, lipides: 0 });
 
@@ -45,10 +45,10 @@ function circle(val: number, obj: number, color: string) {
 }
 
 const cards = [
-    { label: "Calories",  valeur: totaux.calories,  obj: OBJECTIFS.calories,  unite: "kcal", ...circle(totaux.calories,  OBJECTIFS.calories,  "#CE2F7D") },
-    { label: "Protéines", valeur: totaux.proteines, obj: OBJECTIFS.proteines, unite: "g",    ...circle(totaux.proteines, OBJECTIFS.proteines, "#00522D") },
-    { label: "Glucides",  valeur: totaux.glucides,  obj: OBJECTIFS.glucides,  unite: "g",    ...circle(totaux.glucides,  OBJECTIFS.glucides,  "#CE2F7D") },
-    { label: "Lipides",   valeur: totaux.lipides,   obj: OBJECTIFS.lipides,   unite: "g",    ...circle(totaux.lipides,   OBJECTIFS.lipides,   "#00522D") },
+    { label: "Calories",  valeur: totaux.calories, obj:OBJECTIFS.calories, unite: "kca ", ...circle(totaux.calories, OBJECTIFS.calories,  "#CE2F7D") },
+    { label: "Protéines", valeur: totaux.proteines obj:OBJECTIFS.proteines unite: "g", ...circle(totaux.proteines, OBJECTIFS.proteines, "#00522D") },
+    { label: "Glucides",  valeur: totaux.glucides, obj:OBJECTIFS.glucides, unite: "g", ...circle(totaux.glucides, OBJECTIFS.glucides,  "#CE2F7D") },
+    { label: "Lipides",   valeur: totaux.lipides, obj:OBJECTIFS.lipides, unite: "g", ...circle(totaux.lipides, OBJECTIFS.lipides,   "#00522D") },
 ];
 ---
 
@@ -163,16 +163,16 @@ const cards = [
 </Layout>
 
 <script>
-    const pbUrl      = (document.getElementById("journal-root") as HTMLElement).dataset.pbUrl!;
-    const userId     = (document.getElementById("journal-root") as HTMLElement).dataset.userId!;
+    const pbUrl = (document.getElementById("journal-root") as HTMLElement).dataset.pbUrl!;
+    const userId = (document.getElementById("journal-root") as HTMLElement).dataset.userId!;
     const searchInput = document.getElementById("search-aliment") as HTMLInputElement;
     const searchResults = document.getElementById("search-results")!;
-    const searchList  = document.getElementById("search-list")!;
+    const searchList = document.getElementById("search-list")!;
     const entriesList = document.getElementById("entries-list")!;
-    const modal       = document.getElementById("quantite-modal")!;
+    const modal = document.getElementById("quantite-modal")!;
     const modalOverlay = document.getElementById("modal-overlay")!;
-    const modalName   = document.getElementById("modal-aliment-name")!;
-    const modalQty    = document.getElementById("modal-quantite") as HTMLInputElement;
+    const modalName = document.getElementById("modal-aliment-name")!;
+    const modalQty = document.getElementById("modal-quantite") as HTMLInputElement;
     const modalCancel = document.getElementById("modal-cancel")!;
     const modalConfirm = document.getElementById("modal-confirm")!;
 
@@ -301,10 +301,10 @@ const cards = [
         if (!aliment) return;
         const q = qty / 100;
         const delta = {
-            calories:  Math.round(aliment.calories  * q) * sign,
+            calories: Math.round(aliment.calories * q) * sign,
             proteines: Math.round(aliment.proteines * q) * sign,
-            glucides:  Math.round(aliment.glucides  * q) * sign,
-            lipides:   Math.round(aliment.lipides   * q) * sign,
+            glucides: Math.round(aliment.glucides * q) * sign,
+            lipides: Math.round(aliment.lipides * q) * sign,
         };
         const cards = document.querySelectorAll("#cards-container > div");
         const keys = ["calories", "proteines", "glucides", "lipides"] as const;
