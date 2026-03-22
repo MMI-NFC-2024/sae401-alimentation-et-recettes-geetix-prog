@@ -1,0 +1,189 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Loupe from "../assets/icons/iconLoupe.svg?url";
+
+const { locals, redirect } = Astro;
+
+if (!locals.pb.authStore.isValid) return redirect("/");
+
+const user = locals.pb.authStore.record;
+const userObjectif: string = user?.objectif ?? "";
+
+const regimes = await locals.pb.collection("Regimes").getFullList({
+    expand: "aliments_phares",
+    requestKey: null,
+});
+
+const objectifs = [
+    { value: "perdre du poids",emoji: "🔥", label: "PERDRE DU POIDS" },
+    { value: "manger sain",emoji: "🌱", label: "MANGER SAIN" },
+    { value: "booster son energie",emoji: "⚡", label: "BOOSTER SON ÉNERGIE" },
+    { value: "prendre de la masse",emoji: "💪", label: "PRENDRE DE LA MASSE" },
+];
+---
+
+<Layout showHeader titrePage="Regimes">
+<div
+    id="regimes-root"
+    data-user-objectif={userObjectif}
+    class="min-h-screen bg-secondary flex flex-col lg:flex-row pt-30 md:pt-35 pb-50 gap-10 px-5 sm:px-7 md:px-10 lg:px-20"
+>
+
+    <div class="flex flex-col gap-6 lg:w-3/5 order-2 lg:order-1">
+
+        <h1 id="col-title" class="font-modak text-tertiary text-4xl sm:text-5xl uppercase">Les régimes</h1>
+
+        <div class="relative">
+            <input
+                id="search-input"
+                type="text"
+                placeholder="Rechercher un régime..."
+                class="w-full bg-tertiary rounded-full px-6 py-3 font-montserrat text-dark placeholder-dark/50 outline-none focus:ring-2 focus:ring-primary pr-12"
+            />
+            <img src={Loupe} alt="rechercher" class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+        </div>
+
+        {regimes.length === 0 ? (
+            <p id="empty-msg" class="font-montserrat text-tertiary/60 italic text-center mt-8">Aucun régime disponible pour le moment.</p>
+        ) : (
+            <div id="regimes-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                {regimes.map((r: any) => {
+                    const aliments: any[] = r.expand?.aliments_phares ?? [];
+                    return (
+                        <div
+                            class="regime-card bg-tertiary rounded-2xl p-5 flex flex-col gap-3"
+                            data-objectif={r.objectif}
+                            data-nom={r.nom?.toLowerCase() ?? ""}
+                        >
+                            <span class="self-start bg-secondary text-tertiary font-montserrat text-xs font-bold px-3 py-1 rounded-full capitalize">
+                                {r.objectif}
+                            </span>
+
+                            <h3 class="font-modak text-dark text-xl leading-tight">{r.nom}</h3>
+
+                            <p class="font-montserrat text-dark/70 text-sm line-clamp-2">{r.description}</p>
+
+                            <div class="flex items-center gap-3 font-montserrat text-xs text-dark/60 font-bold">
+                                <span>{r.calories_jour ?? "—"} kcal / jour</span>
+                                <span class="w-px h-3 bg-dark/30"></span>
+                                <span>{aliments.length} aliment{aliments.length > 1 ? "s" : ""} phare{aliments.length > 1 ? "s" : ""}</span>
+                            </div>
+
+                            {aliments.length > 0 && (
+                                <div class="flex flex-wrap gap-2">
+                                    {aliments.map((a: any) => (
+                                        <span class="bg-secondary text-tertiary font-montserrat text-xs px-2 py-1 rounded-full">
+                                            {a.nom}
+                                        </span>
+                                    ))}
+                                </div>
+                            )}
+
+                            <a
+                                href={`/regimes/${r.id}`}
+                                class="mt-auto font-modak uppercase text-sm text-tertiary bg-secondary text-center py-2 px-6 rounded-full hover:opacity-90 transition"
+                            >
+                                VOIR CE RÉGIME
+                            </a>
+                        </div>
+                    );
+                })}
+            </div>
+        )}
+
+        <p id="no-results" class="hidden font-montserrat text-tertiary/60 italic text-center mt-4">Aucun régime trouvé.</p>
+
+    </div>
+
+    <div class="flex flex-col gap-6 lg:w-2/5 order-1 lg:order-2">
+
+        <div class="flex flex-col gap-2">
+            <h2 class="font-modak text-tertiary text-4xl sm:text-5xl uppercase">Régimes par objectif</h2>
+            <p class="font-montserrat text-tertiary/70 text-sm">Trouve le régime adapté à ton objectif</p>
+        </div>
+
+        <div class="flex flex-col gap-3">
+            <button
+                class="objectif-btn font-modak uppercase text-base bg-tertiary text-secondary px-6 py-3 rounded-full text-left hover:opacity-90 transition"
+                data-objectif=""
+            >
+                TOUS LES RÉGIMES
+            </button>
+            {objectifs.map((o) => (
+                <button
+                    class="objectif-btn font-modak uppercase text-base bg-tertiary text-secondary px-6 py-3 rounded-full text-left hover:opacity-90 transition"
+                    data-objectif={o.value}
+                >
+                    {o.emoji} {o.label} {o.emoji}
+                </button>
+            ))}
+        </div>
+
+    </div>
+</div>
+</Layout>
+
+<script>
+    const root= document.getElementById("regimes-root")!;
+    const userObjectif= root.dataset.userObjectif ?? "";
+    const searchInput = document.getElementById("search-input") as HTMLInputElement;
+    const colTitle= document.getElementById("col-title")!;
+    const noResults= document.getElementById("no-results")!;
+    const allCards= Array.from(document.querySelectorAll<HTMLElement>(".regime-card"));
+    const allBtns= Array.from(document.querySelectorAll<HTMLButtonElement>(".objectif-btn"));
+
+    let activeObjectif = userObjectif;
+    let searchQuery= "";
+
+    const objectifLabels: Record<string, string> = {
+        "perdre du poids":"RÉGIMES POUR PERDRE DU POIDS",
+        "manger sain":"RÉGIMES POUR MANGER SAIN",
+        "booster son energie":"RÉGIMES POUR BOOSTER SON ÉNERGIE",
+        "prendre de la masse":"RÉGIMES POUR PRENDRE DE LA MASSE",
+    };
+
+    function applyFilters() {
+        let visible = 0;
+        allCards.forEach(card => {
+            const matchObj = !activeObjectif || card.dataset.objectif === activeObjectif;
+            const matchSearch = !searchQuery || (card.dataset.nom ?? "").includes(searchQuery.toLowerCase());
+            const show = matchObj && matchSearch;
+            card.classList.toggle("hidden", !show);
+            if (show) visible++;
+        });
+        noResults.classList.toggle("hidden", visible > 0);
+        colTitle.textContent = activeObjectif
+            ? (objectifLabels[activeObjectif] ?? "LES RÉGIMES")
+            : "LES RÉGIMES";
+    }
+
+    function setActiveBtn(value: string) {
+        allBtns.forEach(btn => {
+            const isActive = btn.dataset.objectif === value;
+            btn.classList.toggle("bg-tertiary",!isActive);
+            btn.classList.toggle("text-secondary",!isActive);
+            btn.classList.toggle("bg-secondary",isActive);
+            btn.classList.toggle("text-tertiary",isActive);
+        });
+    }
+
+    allBtns.forEach(btn => {
+        btn.addEventListener("click", () => {
+            activeObjectif = btn.dataset.objectif ?? "";
+            setActiveBtn(activeObjectif);
+            applyFilters();
+        });
+    });
+
+    let debounce: any;
+    searchInput.addEventListener("input", () => {
+        clearTimeout(debounce);
+        debounce = setTimeout(() => {
+            searchQuery = searchInput.value.trim();
+            applyFilters();
+        }, 250);
+    });
+
+    setActiveBtn(activeObjectif);
+    applyFilters();
+</script>
