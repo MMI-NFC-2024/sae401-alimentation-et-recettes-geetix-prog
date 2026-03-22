@@ -8,6 +8,7 @@ if (!locals.pb.authStore.isValid) return redirect("/");
 
 const user = locals.pb.authStore.record;
 const userObjectif: string = user?.objectif ?? "";
+const userRegimeId: string = user?.regime ?? "";
 
 const regimes = await locals.pb.collection("Regimes").getFullList({
     expand: "aliments_phares",
@@ -26,6 +27,7 @@ const objectifs = [
 <div
     id="regimes-root"
     data-user-objectif={userObjectif}
+    data-user-regime={userRegimeId}
     class="min-h-screen bg-secondary flex flex-col lg:flex-row pt-30 md:pt-35 pb-50 gap-10 px-5 sm:px-7 md:px-10 lg:px-20"
 >
 
@@ -51,40 +53,59 @@ const objectifs = [
                     const aliments: any[] = r.expand?.aliments_phares ?? [];
                     return (
                         <div
-                            class="regime-card bg-tertiary rounded-2xl p-5 flex flex-col gap-3"
+                            class="regime-card rounded-2xl overflow-hidden flex flex-col w-full"
                             data-objectif={r.objectif}
                             data-nom={r.nom?.toLowerCase() ?? ""}
+                            data-id={r.id}
                         >
-                            <span class="self-start bg-secondary text-tertiary font-montserrat text-xs font-bold px-3 py-1 rounded-full capitalize">
-                                {r.objectif}
-                            </span>
-
-                            <h3 class="font-modak text-dark text-xl leading-tight">{r.nom}</h3>
-
-                            <p class="font-montserrat text-dark/70 text-sm line-clamp-2">{r.description}</p>
-
-                            <div class="flex items-center gap-3 font-montserrat text-xs text-dark/60 font-bold">
-                                <span>{r.calories_jour ?? "—"} kcal / jour</span>
-                                <span class="w-px h-3 bg-dark/30"></span>
-                                <span>{aliments.length} aliment{aliments.length > 1 ? "s" : ""} phare{aliments.length > 1 ? "s" : ""}</span>
+                            <div class="bg-tertiary p-5">
+                                <span class="inline-block bg-secondary text-white font-montserrat text-xs font-semibold px-3 py-1 rounded-full capitalize">
+                                    {r.objectif}
+                                </span>
+                                <h3 class="font-montserrat font-bold text-dark mt-2.5" style="font-size:20px">{r.nom}</h3>
+                                <p class="font-montserrat font-normal text-dark mt-2 text-sm leading-relaxed">{r.description}</p>
                             </div>
 
-                            {aliments.length > 0 && (
+                            <div class="bg-dark w-ful px-5 py-4">
+                                <div class="flex justify-around text-center gap-5">
+                                    <div class="flex flex-col">
+                                        <span class="font-montserrat font-bold text-tertiary" style="font-size:28px">{r.calories_jour ?? "—"}</span>
+                                        <span class="font-montserrat text-white" style="font-size:13px">kcal / jour</span>
+                                    </div>
+                                    <div class="w-px bg-tertiary self-stretch" style="height:40px;align-self:center"></div>
+                                    <div class="flex flex-col">
+                                        <span class="font-montserrat font-bold text-tertiary" style="font-size:28px">{aliments.length}</span>
+                                        <span class="font-montserrat text-white" style="font-size:13px">aliment{aliments.length > 1 ? "s" : ""} phare{aliments.length > 1 ? "s" : ""}</span>
+                                    </div>
+                                </div>
+                                <div class="mt-4 h-px bg-tertiary"></div>
+                            </div>
+
+                            <div class="bg-dark px-5 py-4">
+                                <p class="font-montserrat text-white/70" style="font-size:13px; margin-bottom:10px">Aliments phares</p>
                                 <div class="flex flex-wrap gap-2">
                                     {aliments.map((a: any) => (
-                                        <span class="bg-secondary text-tertiary font-montserrat text-xs px-2 py-1 rounded-full">
+                                        <span class="bg-secondary text-white font-montserrat font-semibold text-xs px-3 py-1 rounded-full" style="padding:5px 12px">
                                             {a.nom}
                                         </span>
                                     ))}
+                                    {aliments.length === 0 && (
+                                        <span class="font-montserrat text-white/40 text-xs italic">Aucun aliment renseigné</span>
+                                    )}
                                 </div>
-                            )}
+                                <div class="mt-4 h-px bg-tertiary"></div>
+                            </div>
 
-                            <a
-                                href={`/regimes/${r.id}`}
-                                class="mt-auto font-modak uppercase text-sm text-tertiary bg-secondary text-center py-2 px-6 rounded-full hover:opacity-90 transition"
-                            >
-                                VOIR CE RÉGIME
-                            </a>
+                            <div class="bg-dark px-5 py-4 flex justify-center">
+                                <button
+                                    class={`adopt-btn font-montserrat font-extrabold rounded-full transition ${r.id === userRegimeId ? "bg-tertiary text-secondary cursor-default" : "bg-secondary text-tertiary hover:opacity-90 cursor-pointer"}`}
+                                    data-id={r.id}
+                                    style="font-size:13px; padding:10px 2rem; letter-spacing:1px"
+                                    disabled={r.id === userRegimeId}
+                                >
+                                    {r.id === userRegimeId ? "RÉGIME ADOPTÉ" : "ADOPTER CE RÉGIME"}
+                                </button>
+                            </div>
                         </div>
                     );
                 })}
@@ -162,7 +183,7 @@ const objectifs = [
             const isActive = btn.dataset.objectif === value;
             btn.classList.toggle("bg-tertiary",!isActive);
             btn.classList.toggle("text-secondary",!isActive);
-            btn.classList.toggle("bg-secondary",isActive);
+            btn.classList.toggle("bg-primary",isActive);
             btn.classList.toggle("text-tertiary",isActive);
         });
     }
@@ -186,4 +207,43 @@ const objectifs = [
 
     setActiveBtn(activeObjectif);
     applyFilters();
+
+    let currentRegimeId = root.dataset.userRegime ?? "";
+
+    function updateAdoptBtns() {
+        document.querySelectorAll<HTMLButtonElement>(".adopt-btn").forEach(btn => {
+            const isAdopted = btn.dataset.id === currentRegimeId;
+            btn.textContent = isAdopted ? "RÉGIME ADOPTÉ" : "ADOPTER CE RÉGIME";
+            btn.disabled = isAdopted;
+            btn.classList.toggle("bg-tertiary", isAdopted);
+            btn.classList.toggle("text-secondary", isAdopted);
+            btn.classList.toggle("cursor-default", isAdopted);
+            btn.classList.toggle("bg-secondary", !isAdopted);
+            btn.classList.toggle("text-tertiary", !isAdopted);
+            btn.classList.toggle("hover:opacity-90", !isAdopted);
+            btn.classList.toggle("cursor-pointer", !isAdopted);
+        });
+    }
+
+    document.querySelectorAll<HTMLButtonElement>(".adopt-btn").forEach(btn => {
+        btn.addEventListener("click", async () => {
+            const regimeId = btn.dataset.id!;
+            btn.textContent = "...";
+            btn.disabled = true;
+
+            const res = await fetch("/api/adopt-regime", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ regimeId }),
+            });
+
+            if (res.ok) {
+                currentRegimeId = regimeId;
+                updateAdoptBtns();
+            } else {
+                btn.textContent = "ADOPTER CE RÉGIME";
+                btn.disabled = false;
+            }
+        });
+    });
 </script>
