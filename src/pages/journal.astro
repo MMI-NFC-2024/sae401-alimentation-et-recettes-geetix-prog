@@ -18,7 +18,31 @@ const entries = await locals.pb.collection("Journal").getFullList({
     requestKey: null,
 });
 
-const OBJECTIFS = { calories: 1850, proteines: 120, glucides: 250, lipides: 90 };
+const objectifsParRegime: Record<string, { calories: number; proteines: number; glucides: number; lipides: number }> = {
+    perte:    { calories: 1500, proteines: 130, glucides: 150, lipides: 55 },
+    prise:    { calories: 2800, proteines: 200, glucides: 350, lipides: 100 },
+    maintien: { calories: 2000, proteines: 130, glucides: 250, lipides: 75 },
+};
+
+const objectifsParObjectif: Record<string, { calories: number; proteines: number; glucides: number; lipides: number }> = {
+    "perdre du poids":     { calories: 1500, proteines: 130, glucides: 150, lipides: 55 },
+    "prendre de la masse": { calories: 2800, proteines: 200, glucides: 350, lipides: 100 },
+    "manger sain":         { calories: 2000, proteines: 130, glucides: 250, lipides: 75 },
+    "booster son énergie": { calories: 2200, proteines: 140, glucides: 280, lipides: 80 },
+};
+
+let OBJECTIFS = { calories: 1850, proteines: 120, glucides: 250, lipides: 90 };
+
+if (user.regime) {
+    try {
+        const regime = await locals.pb.collection("Regimes").getOne(user.regime, { requestKey: null });
+        if (regime.objectif && objectifsParRegime[regime.objectif]) {
+            OBJECTIFS = objectifsParRegime[regime.objectif];
+        }
+    } catch {}
+} else if (user.objectif && objectifsParObjectif[user.objectif]) {
+    OBJECTIFS = objectifsParObjectif[user.objectif];
+}
 
 const totaux = entries.reduce((acc: any, e: any) => {
     const a = e.expand?.aliment;
@@ -58,6 +82,7 @@ const cards = [
     data-pb-url={pbUrl}
     data-user-id={user.id}
     data-today={today}
+    data-objectifs={JSON.stringify(OBJECTIFS)}
     class="min-h-screen bg-secondary flex flex-col lg:flex-row pt-30 md:pt-35 pb-50 gap-16 px-5 sm:px-7 md:px-10 lg:px-20 gap-10 lg:gap-8"
 >
 
@@ -176,7 +201,7 @@ const cards = [
     const modalCancel = document.getElementById("modal-cancel")!;
     const modalConfirm = document.getElementById("modal-confirm")!;
 
-    const OBJECTIFS = { calories: 1850, proteines: 120, glucides: 250, lipides: 90 };
+    const OBJECTIFS = JSON.parse((document.getElementById("journal-root") as HTMLElement).dataset.objectifs ?? '{"calories":1850,"proteines":120,"glucides":250,"lipides":90}');
 
     let selectedAliment: any = null;
     let debounceTimer: any;
