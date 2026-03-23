@@ -231,7 +231,7 @@ const objectifs = [
             btn.textContent = "...";
             btn.disabled = true;
 
-            const res = await fetch("/api/adopt-regime", {
+            const res = await fetch("/apis/adopt-regime", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ regimeId }),

@@ -399,7 +399,7 @@ const pbUrl = locals.pb.baseURL;
         if (!btn) return;
         const id = btn.dataset.id!;
         btn.textContent = "...";
-        const res = await fetch("/api/comment-delete", {
+        const res = await fetch("/apis/comment-delete", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ id }),
@@ -422,7 +422,7 @@ const pbUrl = locals.pb.baseURL;
         submitBtn.disabled = true;
         submitBtn.textContent = "...";
 
-        const res = await fetch("/api/comment-add", {
+        const res = await fetch("/apis/comment-add", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ recetteId, contenu }),
@@ -466,7 +466,7 @@ const pbUrl = locals.pb.baseURL;
             const valeur = parseInt(btn.dataset.value!);
             starBtns.forEach(b => (b.disabled = true));
 
-            const res = await fetch("/api/note-recette", {
+            const res = await fetch("/apis/note-recette", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ recetteId, valeur }),

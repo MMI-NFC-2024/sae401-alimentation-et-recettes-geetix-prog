@@ -195,7 +195,7 @@ const cards = [
     });
 
     async function searchAliments(q: string) {
-        const res = await fetch(`/api/aliments-search?q=${encodeURIComponent(q)}`);
+        const res = await fetch(`/apis/aliments-search?q=${encodeURIComponent(q)}`);
         const items = await res.json();
         searchList.innerHTML = "";
         if (!items.length) {
@@ -234,7 +234,7 @@ const cards = [
         const qty = parseInt(modalQty.value);
         if (!qty || qty < 1) return;
 
-        const res = await fetch("/api/journal-add", {
+        const res = await fetch("/apis/journal-add", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ alimentId: selectedAliment.id, quantite: qty }),
@@ -255,7 +255,7 @@ const cards = [
         const id = btn.dataset.id!;
         const card = btn.closest("[data-entry-id]") as HTMLElement;
 
-        const res = await fetch("/api/journal-delete", {
+        const res = await fetch("/apis/journal-delete", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ id }),
@@ -336,7 +336,7 @@ const cards = [
 
     async function recalculateTotals() {
         const today = (document.getElementById("journal-root") as HTMLElement).dataset.today!;
-        const res = await fetch(`/api/journal-today?today=${today}`);
+        const res = await fetch(`/apis/journal-today?today=${today}`);
         if (!res.ok) return;
         const { totaux } = await res.json();
 
