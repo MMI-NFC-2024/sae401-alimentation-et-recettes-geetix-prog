@@ -7,7 +7,7 @@ const { locals, redirect } = Astro;
 if (!locals.pb.authStore.isValid) return redirect("/");
 
 const user = locals.pb.authStore.record;
-const pbUrl = import.meta.env.POCKETBASE_URL;
+const pbUrl = locals.pb.baseURL;
 
 const today = new Date().toISOString().split("T")[0];
 

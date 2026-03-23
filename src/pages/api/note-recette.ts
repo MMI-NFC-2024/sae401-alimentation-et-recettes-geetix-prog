@@ -1,5 +1,4 @@
 import type { APIRoute } from "astro";
-import PocketBase from "pocketbase";
 
 export const POST: APIRoute = async ({ locals, request }) => {
     if (!locals.pb.authStore.isValid) {
@@ -26,13 +25,12 @@ export const POST: APIRoute = async ({ locals, request }) => {
             await locals.pb.collection("Notes").create({ recette: recetteId, user: userId, valeur }, { requestKey: null });
         }
 
-        const pbAdmin = new PocketBase(import.meta.env.POCKETBASE_URL);
-        await pbAdmin.collection("_superusers").authWithPassword(
+        await locals.pb.collection("_superusers").authWithPassword(
             import.meta.env.PB_EMAIL,
             import.meta.env.PB_PASSWORD
         );
 
-        const toutes = await pbAdmin.collection("Notes").getFullList({
+        const toutes = await locals.pb.collection("Notes").getFullList({
             filter: `recette = "${recetteId}"`,
             requestKey: null,
         });
@@ -41,7 +39,7 @@ export const POST: APIRoute = async ({ locals, request }) => {
             ? Math.round((toutes.reduce((s: number, n: any) => s + n.valeur, 0) / toutes.length) * 10) / 10
             : 0;
 
-        await pbAdmin.collection("Recettes").update(recetteId, { note_moyenne: moyenne }, { requestKey: null });
+        await locals.pb.collection("Recettes").update(recetteId, { note_moyenne: moyenne }, { requestKey: null });
 
         return new Response(JSON.stringify({ moyenne, total: toutes.length }), { status: 200 });
     } catch (e: any) {

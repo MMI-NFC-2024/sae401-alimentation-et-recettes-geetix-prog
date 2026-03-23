@@ -25,7 +25,7 @@ const [recettesObjectif, toutesRecettes] = await Promise.all([
 
 const totalPages = Math.ceil(toutesRecettes.totalItems / PER_PAGE);
 
-const pbUrl = import.meta.env.POCKETBASE_URL;
+const pbUrl = locals.pb.baseURL;
 
 function imageUrl(recette: any) {
     return recette.image

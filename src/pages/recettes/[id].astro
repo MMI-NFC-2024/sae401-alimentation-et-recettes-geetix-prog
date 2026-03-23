@@ -82,7 +82,7 @@ const commentaires = await locals.pb.collection("Commentaires").getFullList({
 });
 
 const currentUserId: string = locals.pb.authStore.record.id;
-const pbUrl = import.meta.env.POCKETBASE_URL;
+const pbUrl = locals.pb.baseURL;
 ---
 
 <Layout showHeader titrePage="Recettes">
