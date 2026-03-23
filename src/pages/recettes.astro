@@ -64,7 +64,7 @@ function imageUrl(recette: any) {
                         const bg = i % 2 === 0 ? "secondary" : "primary";
                         const img = imageUrl(recette);
                         return (
-                            <a href={`/recettes/${recette.id}`} class={`flex flex-col bg-${bg} rounded-3xl overflow-hidden hover:scale-105 transition ease-in-out w-full sm:w-[calc(50%-10px)] md:w-[calc(33.333%-14px)]`}>
+                            <a href={`/recettes/${recette.id}`} class={`flex flex-col bg-${bg} rounded-3xl overflow-hidden hover:scale-105 transition ease-in-out w-full sm:w-72`}>
                                 {img && <img src={img} alt={recette.titre} class="w-full h-40 object-cover" loading="lazy" />}
                                 <div class="p-4 flex flex-col gap-2">
                                     <h3 class="font-modak text-tertiary text-xl">{recette.titre}</h3>
@@ -88,7 +88,7 @@ function imageUrl(recette: any) {
                     const bg = i % 2 === 0 ? "secondary" : "primary";
                     const img = imageUrl(recette);
                     return (
-                        <a href={`/recettes/${recette.id}`} class={`flex flex-col bg-${bg} rounded-3xl overflow-hidden hover:scale-105 transition ease-in-out w-full sm:w-[calc(50%-10px)] md:w-[calc(33.333%-14px)] lg:w-[calc(25%-15px)]`}>
+                        <a href={`/recettes/${recette.id}`} class={`flex flex-col bg-${bg} rounded-3xl overflow-hidden hover:scale-105 transition ease-in-out w-full sm:w-72`}>
                             {img && <img src={img} alt={recette.titre} class="w-full h-40 object-cover" loading="lazy" />}
                             <div class="p-4 flex flex-col gap-2">
                                 <h3 class="font-modak text-tertiary text-xl">{recette.titre}</h3>
@@ -140,7 +140,7 @@ function imageUrl(recette: any) {
             ? `${pbUrl}/api/files/${recette.collectionId}/${recette.id}/${recette.image}`
             : "";
         return `
-            <a href="/recettes/${recette.id}" class="flex flex-col bg-secondary rounded-3xl overflow-hidden hover:scale-105 transition ease-in-out w-full sm:w-[calc(50%-10px)] md:w-[calc(33.333%-14px)] lg:w-[calc(25%-15px)]">
+            <a href="/recettes/${recette.id}" class="flex flex-col bg-secondary rounded-3xl overflow-hidden hover:scale-105 transition ease-in-out w-full sm:w-72">
                 ${img ? `<img src="${img}" alt="${recette.titre}" class="w-full h-40 object-cover" loading="lazy" />` : ""}
                 <div class="p-4 flex flex-col gap-2">
                     <h3 class="font-modak text-tertiary text-xl">${recette.titre}</h3>
@@ -164,28 +164,13 @@ function imageUrl(recette: any) {
         resultsdiv.classList.remove("hidden");
         resultsdiv.classList.add("flex");
 
-        const [resTitre, resAliment] = await Promise.all([
-            fetch(`${pbUrl}/api/collections/Recettes/records?` + new URLSearchParams({
-                filter: `titre ~ "${query}"`,
-                perPage: "20",
-            })),
-            fetch(`${pbUrl}/api/collections/Recette_aliments/records?` + new URLSearchParams({
-                filter: `aliment.nom ~ "${query}"`,
-                expand: "recette",
-                perPage: "50",
-            })),
-        ]);
+        const resTitre = await fetch(`${pbUrl}/api/collections/Recettes/records?` + new URLSearchParams({
+            filter: `titre ~ "${query}"`,
+            perPage: "20",
+        }));
 
-        const [dataTitre, dataAliment] = await Promise.all([resTitre.json(), resAliment.json()]);
-
-        const map = new Map<string, any>();
-        (dataTitre.items ?? []).forEach((r: any) => map.set(r.id, r));
-        (dataAliment.items ?? []).forEach((ra: any) => {
-            const r = ra.expand?.recette;
-            if (r) map.set(r.id, r);
-        });
-
-        const items = Array.from(map.values());
+        const dataTitre = await resTitre.json();
+        const items: any[] = dataTitre.items ?? [];
 
         if (items.length === 0) {
             grid.innerHTML = "";
