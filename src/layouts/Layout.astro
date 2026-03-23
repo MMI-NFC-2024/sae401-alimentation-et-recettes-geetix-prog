@@ -7,21 +7,60 @@ import BottomNav from "../components/BottomNav.astro";
 
 interface Props {
     showHeader?: boolean;
-	titrePage?: string;
+    titrePage?: string;
+    description?: string;
+    ogImage?: string;
+    ogType?: string;
 }
 
-const { showHeader = false, titrePage } = Astro.props;
+const {
+    showHeader = false,
+    titrePage,
+    description = "NŪRA, votre nutritionniste du quotidien. Recettes saines, journal alimentaire et régimes personnalisés selon vos objectifs.",
+    ogImage = "/og.png",
+    ogType = "website",
+} = Astro.props;
+
+const siteUrl = "https://sae401dev.mathis-guellati.fr";
+const canonical = new URL(Astro.url.pathname, siteUrl).href;
+const fullTitle = titrePage ? `NŪRA - ${titrePage}` : "NŪRA - Votre nutritionniste du quotidien";
 ---
 
 <!doctype html>
 <html lang="fr">
 	<head>
 		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<link rel="icon" href="/favicon.ico" />
-		<meta name="generator" content={Astro.generator} />
-		<title>NŪRA - {titrePage}</title>
+		<link rel="canonical" href={canonical} />
+
+		<title>{fullTitle}</title>
+		<meta name="description" content={description} />
+		<meta name="robots" content="index, follow" />
+		<meta name="theme-color" content="#1a1a2e" />
+
+		<meta property="og:type" content={ogType} />
+		<meta property="og:url" content={canonical} />
+		<meta property="og:title" content={fullTitle} />
+		<meta property="og:description" content={description} />
+		<meta property="og:image" content={`${siteUrl}${ogImage}`} />
+		<meta property="og:site_name" content="NŪRA" />
+		<meta property="og:locale" content="fr_FR" />
+
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:title" content={fullTitle} />
+		<meta name="twitter:description" content={description} />
+		<meta name="twitter:image" content={`${siteUrl}${ogImage}`} />
+
+		<script type="application/ld+json" set:html={JSON.stringify({
+			"@context": "https://schema.org",
+			"@type": "WebSite",
+			"name": "NŪRA",
+			"url": siteUrl,
+			"description": "Votre nutritionniste du quotidien — recettes, régimes et journal alimentaire.",
+			"inLanguage": "fr-FR",
+		})} />
 	</head>
 	<body class="pb-16 md:pb-0">
 		{showHeader && <Header titrePage={titrePage} />}

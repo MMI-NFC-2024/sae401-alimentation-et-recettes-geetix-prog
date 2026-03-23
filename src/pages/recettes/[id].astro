@@ -85,7 +85,13 @@ const currentUserId: string = locals.pb.authStore.record.id;
 const pbUrl = locals.pb.baseURL;
 ---
 
-<Layout showHeader titrePage="Recettes">
+<Layout
+    showHeader
+    titrePage={recette.titre}
+    description={recette.description ?? `Recette ${recette.titre} — ${recette.temps_preparation ?? "?"} min, niveau ${recette.difficulte ?? "?"}.`}
+    ogImage={imageUrl ?? undefined}
+    ogType="article"
+>
     <div class="min-h-screen bg-tertiary font-montserrat pt-28 md:pt-36 pb-24 px-5 sm:px-7 md:px-10 lg:px-20 flex flex-col gap-10">
 
         <div class="flex flex-col md:flex-row gap-6 md:gap-10 items-start">
