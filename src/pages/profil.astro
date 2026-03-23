@@ -46,7 +46,7 @@ const avatarUrl = user?.avatar
             Voir les Mentions Légales / Politique de confidentialité
         </a>
 
-        <form method="POST" action="/apis/logout">
+        <form method="POST" action="/api/logout">
             <button type="submit" class="font-montserrat text-sm md:text-base text-dark/50 underline cursor-pointer">
                 Se déconnecter
             </button>
@@ -252,7 +252,7 @@ const avatarUrl = user?.avatar
         }
 
         try {
-            const res = await fetch("/apis/update-profile", { method: "POST", body: formData });
+            const res = await fetch("/api/update-profile", { method: "POST", body: formData });
             const json = await res.json();
 
             if (!res.ok) {
@@ -293,7 +293,7 @@ const avatarUrl = user?.avatar
                 if (passwordChanged) {
                     message.textContent = "Mot de passe modifié. Redirection...";
                     setTimeout(async () => {
-                        await fetch("/apis/logout", { method: "POST" });
+                        await fetch("/api/logout", { method: "POST" });
                         window.location.href = "/";
                     }, 1500);
                 } else {

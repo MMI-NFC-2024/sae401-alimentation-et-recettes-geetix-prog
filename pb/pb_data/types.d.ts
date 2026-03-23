@@ -13714,7 +13714,7 @@ namespace core {
    *   - *:create
    *   - /
    *   - /api
-   *   - POST /apis/collections/
+   *   - POST /api/collections/
    * ```
    */
   label: string

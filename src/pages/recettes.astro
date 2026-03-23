@@ -144,7 +144,7 @@ function imageUrl(recette: any) {
 
     function cardHTML(recette: any): string {
         const img = recette.image
-            ? `${pbUrl}/apis/files/${recette.collectionId}/${recette.id}/${recette.image}`
+            ? `${pbUrl}/api/files/${recette.collectionId}/${recette.id}/${recette.image}`
             : "";
         return `
             <a href="/recettes/${recette.id}" class="flex flex-col bg-secondary rounded-3xl overflow-hidden hover:scale-105 transition ease-in-out w-full sm:w-72">
@@ -171,7 +171,7 @@ function imageUrl(recette: any) {
         resultsdiv.classList.remove("hidden");
         resultsdiv.classList.add("flex");
 
-        const resTitre = await fetch(`${pbUrl}/apis/collections/Recettes/records?` + new URLSearchParams({
+        const resTitre = await fetch(`${pbUrl}/api/collections/Recettes/records?` + new URLSearchParams({
             filter: `titre ~ "${query}"`,
             perPage: "20",
         }));

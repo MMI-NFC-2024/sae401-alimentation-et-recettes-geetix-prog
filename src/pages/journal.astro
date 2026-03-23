@@ -135,7 +135,7 @@ const cards = [
             {entries.map((e: any) => {
                 const a = e.expand?.aliment;
                 if (!a) return null;
-                const imageUrl = a.image ? `${pbUrl}/apis/files/${a.collectionId}/${a.id}/${a.image}` : null;
+                const imageUrl = a.image ? `${pbUrl}/api/files/${a.collectionId}/${a.id}/${a.image}` : null;
                 const kcal = Math.round(a.calories * e.quantite / 100);
                 return (
                     <div class="bg-tertiary rounded-full px-5 py-3 flex items-center gap-4" data-entry-id={e.id}>
@@ -195,7 +195,7 @@ const cards = [
     });
 
     async function searchAliments(q: string) {
-        const res = await fetch(`/apis/aliments-search?q=${encodeURIComponent(q)}`);
+        const res = await fetch(`/api/aliments-search?q=${encodeURIComponent(q)}`);
         const items = await res.json();
         searchList.innerHTML = "";
         if (!items.length) {
@@ -234,7 +234,7 @@ const cards = [
         const qty = parseInt(modalQty.value);
         if (!qty || qty < 1) return;
 
-        const res = await fetch("/apis/journal-add", {
+        const res = await fetch("/api/journal-add", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ alimentId: selectedAliment.id, quantite: qty }),
@@ -255,7 +255,7 @@ const cards = [
         const id = btn.dataset.id!;
         const card = btn.closest("[data-entry-id]") as HTMLElement;
 
-        const res = await fetch("/apis/journal-delete", {
+        const res = await fetch("/api/journal-delete", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ id }),
@@ -275,7 +275,7 @@ const cards = [
         if (!a) return;
         const qty = entry.quantite;
         const kcal = Math.round(a.calories * qty / 100);
-        const imageUrl = a.image ? `${pbUrl}/apis/files/${a.collectionId}/${a.id}/${a.image}` : null;
+        const imageUrl = a.image ? `${pbUrl}/api/files/${a.collectionId}/${a.id}/${a.image}` : null;
 
         const div = document.createElement("div");
         div.className = "bg-tertiary rounded-full px-5 py-3 flex items-center gap-4";
@@ -336,7 +336,7 @@ const cards = [
 
     async function recalculateTotals() {
         const today = (document.getElementById("journal-root") as HTMLElement).dataset.today!;
-        const res = await fetch(`/apis/journal-today?today=${today}`);
+        const res = await fetch(`/api/journal-today?today=${today}`);
         if (!res.ok) return;
         const { totaux } = await res.json();
 
