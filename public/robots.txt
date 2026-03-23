@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /apis/
+Disallow: /accueil
+Disallow: /journal
+Disallow: /profil
+
+Sitemap: https://sae401dev.mathis-guellati.fr/sitemap.xml
