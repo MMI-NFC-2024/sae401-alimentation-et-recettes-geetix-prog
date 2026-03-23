@@ -14,7 +14,7 @@ const aliments = await pbAdmin.collection("Aliments").getFullList({
     requestKey: null,
 });
 
-const pbUrl = locals.pb.baseURL;
+const pbUrl = import.meta.env.POCKETBASE_URL;
 ---
 
 <Layout titrePage="Admin - Aliments">

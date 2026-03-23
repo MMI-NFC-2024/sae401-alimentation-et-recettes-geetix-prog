@@ -15,7 +15,7 @@ const utilisateurs = await pbAdmin.collection("users").getFullList({
     requestKey: null,
 });
 
-const pbUrl = locals.pb.baseURL;
+const pbUrl = import.meta.env.POCKETBASE_URL;
 ---
 
 <Layout titrePage="Admin - Utilisateurs">
