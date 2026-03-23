@@ -23,4 +23,6 @@ Egalement pour le systeme de notation des recettes, que je ne savais pas vraimen
 
 Pour certaines routes API comme la gestion des commentaires (`/src/pages/apis/comment-add.ts`, `comment-delete.ts`) et l'adoption d'un regime (`adopt-regime.ts`), l'IA m'a aide a structurer les reponses et a gerer les cas d'erreur.
 
+Je me suis servis de l'IA pour mettre du contenu en masse dans mon pocketbase et pour quelque icons.
+
 Enfin, je m'en suis servi pour la structure de certains codes et pour le SEO.
