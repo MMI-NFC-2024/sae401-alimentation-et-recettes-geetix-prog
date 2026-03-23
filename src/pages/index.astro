@@ -201,6 +201,7 @@ if (request.method === "POST") {
                     />
                     <button type="button" data-toggle="registerPassword" class="absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer text-lg bg-transparent border-none">👁️</button>
                 </div>
+                <p id="pwdError" class="text-red-400 font-montserrat text-xs text-center hidden">Le mot de passe doit contenir au moins 8 caractères.</p>
                 <div class="w-4/5">
                     <input
                         name="passwordConfirm"
@@ -274,6 +275,26 @@ if (request.method === "POST") {
                 avatarIcon.classList.add("hidden");
             };
             reader.readAsDataURL(file);
+        }
+    });
+
+    const registerForm = document.querySelector<HTMLFormElement>("#register form");
+    const registerPasswordInput = document.getElementById("registerPassword") as HTMLInputElement;
+    const pwdError = document.getElementById("pwdError")!;
+
+    registerForm?.addEventListener("submit", (e) => {
+        if (registerPasswordInput.value.length < 8) {
+            e.preventDefault();
+            pwdError.classList.remove("hidden");
+            registerPasswordInput.focus();
+        } else {
+            pwdError.classList.add("hidden");
+        }
+    });
+
+    registerPasswordInput?.addEventListener("input", () => {
+        if (registerPasswordInput.value.length >= 8) {
+            pwdError.classList.add("hidden");
         }
     });
 

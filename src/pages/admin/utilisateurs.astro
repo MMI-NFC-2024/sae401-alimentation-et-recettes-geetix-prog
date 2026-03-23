@@ -1,0 +1,83 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { createAdminPb } from "../../utils/pb";
+
+const { locals, redirect } = Astro;
+
+if (!locals.pb.authStore.isValid) return redirect("/");
+if (locals.pb.authStore.record?.email !== import.meta.env.PB_EMAIL) return redirect("/accueil");
+
+const pbAdmin = await createAdminPb();
+const utilisateurs = await pbAdmin.collection("users").getFullList({
+    sort: "-created",
+    expand: "regime",
+    requestKey: null,
+});
+
+const pbUrl = locals.pb.baseURL;
+---
+
+<Layout titrePage="Admin - Utilisateurs">
+    <div class="min-h-screen bg-gray-100 font-montserrat">
+        <nav class="bg-gray-900 text-white px-6 py-4 flex items-center gap-6 text-sm font-bold">
+            <span class="font-modak text-xl text-tertiary tracking-wide">NŪRA ADMIN</span>
+            <a href="/admin" class="text-white/60 hover:text-white transition">Dashboard</a>
+            <a href="/admin/recettes" class="text-white/60 hover:text-white transition">Recettes</a>
+            <a href="/admin/aliments" class="text-white/60 hover:text-white transition">Aliments</a>
+            <a href="/admin/utilisateurs" class="text-white hover:text-tertiary transition">Utilisateurs</a>
+            <a href="/accueil" class="ml-auto text-white/60 hover:text-white transition">← Retour au site</a>
+        </nav>
+
+        <main class="px-6 py-10 max-w-6xl mx-auto flex flex-col gap-6">
+            <div class="flex items-center justify-between">
+                <h1 class="text-2xl font-bold text-gray-800">Utilisateurs <span class="text-gray-400 text-lg font-normal">({utilisateurs.length})</span></h1>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-50 border-b border-gray-200">
+                        <tr>
+                            <th class="text-left px-6 py-4 text-gray-500 font-semibold">Utilisateur</th>
+                            <th class="text-left px-6 py-4 text-gray-500 font-semibold hidden sm:table-cell">Email</th>
+                            <th class="text-left px-6 py-4 text-gray-500 font-semibold hidden md:table-cell">Objectif</th>
+                            <th class="text-left px-6 py-4 text-gray-500 font-semibold hidden lg:table-cell">Régime adopté</th>
+                            <th class="text-left px-6 py-4 text-gray-500 font-semibold hidden lg:table-cell">Inscrit le</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        {utilisateurs.map((u: any) => {
+                            const avatar = u.avatar
+                                ? `${pbUrl}/api/files/${u.collectionId}/${u.id}/${u.avatar}`
+                                : null;
+                            const date = new Date((u.created ?? "").replace(" ", "T")).toLocaleDateString("fr-FR");
+                            const regime = u.expand?.regime?.nom ?? "—";
+                            return (
+                                <tr class="hover:bg-gray-50 transition">
+                                    <td class="px-6 py-4 flex items-center gap-3">
+                                        {avatar
+                                            ? <img src={avatar} alt={u.prenom} class="w-9 h-9 rounded-full object-cover shrink-0" />
+                                            : <div class="w-9 h-9 rounded-full bg-gray-200 shrink-0 flex items-center justify-center text-gray-500 text-xs font-bold">{u.prenom?.[0]?.toUpperCase()}</div>
+                                        }
+                                        <div>
+                                            <p class="font-medium text-gray-800">{u.prenom} {u.nom}</p>
+                                            <p class="text-xs text-gray-400 sm:hidden">{u.email}</p>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 text-gray-600 hidden sm:table-cell">{u.email}</td>
+                                    <td class="px-6 py-4 hidden md:table-cell">
+                                        <span class="capitalize text-gray-600 bg-gray-100 px-2 py-1 rounded-full text-xs">{u.objectif ?? "—"}</span>
+                                    </td>
+                                    <td class="px-6 py-4 text-gray-600 hidden lg:table-cell text-xs">{regime}</td>
+                                    <td class="px-6 py-4 text-gray-400 hidden lg:table-cell">{date}</td>
+                                </tr>
+                            );
+                        })}
+                    </tbody>
+                </table>
+                {utilisateurs.length === 0 && (
+                    <p class="text-center text-gray-400 py-10">Aucun utilisateur</p>
+                )}
+            </div>
+        </main>
+    </div>
+</Layout>

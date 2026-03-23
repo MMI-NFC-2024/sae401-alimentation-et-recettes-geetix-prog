@@ -1,0 +1,118 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { createAdminPb } from "../../utils/pb";
+
+const { locals, redirect } = Astro;
+
+if (!locals.pb.authStore.isValid) return redirect("/");
+if (locals.pb.authStore.record?.email !== import.meta.env.PB_EMAIL) return redirect("/accueil");
+
+const pbAdmin = await createAdminPb();
+const aliments = await pbAdmin.collection("Aliments").getFullList({
+    sort: "nom",
+    requestKey: null,
+});
+
+const pbUrl = locals.pb.baseURL;
+---
+
+<Layout titrePage="Admin - Aliments">
+    <div class="min-h-screen bg-gray-100 font-montserrat">
+        <nav class="bg-gray-900 text-white px-6 py-4 flex items-center gap-6 text-sm font-bold">
+            <span class="font-modak text-xl text-tertiary tracking-wide">NŪRA ADMIN</span>
+            <a href="/admin" class="text-white/60 hover:text-white transition">Dashboard</a>
+            <a href="/admin/recettes" class="text-white/60 hover:text-white transition">Recettes</a>
+            <a href="/admin/aliments" class="text-white hover:text-tertiary transition">Aliments</a>
+            <a href="/admin/utilisateurs" class="text-white/60 hover:text-white transition">Utilisateurs</a>
+            <a href="/accueil" class="ml-auto text-white/60 hover:text-white transition">← Retour au site</a>
+        </nav>
+
+        <main class="px-6 py-10 max-w-6xl mx-auto flex flex-col gap-6">
+            <div class="flex items-center justify-between">
+                <h1 class="text-2xl font-bold text-gray-800">Aliments <span class="text-gray-400 text-lg font-normal">({aliments.length})</span></h1>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-50 border-b border-gray-200">
+                        <tr>
+                            <th class="text-left px-6 py-4 text-gray-500 font-semibold">Aliment</th>
+                            <th class="text-left px-6 py-4 text-gray-500 font-semibold hidden sm:table-cell">Catégorie</th>
+                            <th class="text-right px-6 py-4 text-gray-500 font-semibold hidden md:table-cell">Calories</th>
+                            <th class="text-right px-6 py-4 text-gray-500 font-semibold hidden lg:table-cell">Protéines</th>
+                            <th class="text-right px-6 py-4 text-gray-500 font-semibold hidden lg:table-cell">Glucides</th>
+                            <th class="text-right px-6 py-4 text-gray-500 font-semibold hidden lg:table-cell">Lipides</th>
+                            <th class="px-6 py-4"></th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        {aliments.map((a: any) => {
+                            const img = a.image
+                                ? `${pbUrl}/api/files/${a.collectionId}/${a.id}/${a.image}`
+                                : null;
+                            return (
+                                <tr class="hover:bg-gray-50 transition" data-id={a.id}>
+                                    <td class="px-6 py-4 flex items-center gap-3">
+                                        {img
+                                            ? <img src={img} alt={a.nom} class="w-9 h-9 rounded-lg object-cover shrink-0" />
+                                            : <div class="w-9 h-9 rounded-lg bg-gray-200 shrink-0"></div>
+                                        }
+                                        <span class="font-medium text-gray-800">{a.nom}</span>
+                                    </td>
+                                    <td class="px-6 py-4 hidden sm:table-cell">
+                                        <span class="capitalize text-gray-600 bg-gray-100 px-2 py-1 rounded-full text-xs">{a.categorie ?? "—"}</span>
+                                    </td>
+                                    <td class="px-6 py-4 text-right text-gray-600 hidden md:table-cell">{a.calories ?? "—"} kcal</td>
+                                    <td class="px-6 py-4 text-right text-gray-600 hidden lg:table-cell">{a.proteines ?? "—"} g</td>
+                                    <td class="px-6 py-4 text-right text-gray-600 hidden lg:table-cell">{a.glucides ?? "—"} g</td>
+                                    <td class="px-6 py-4 text-right text-gray-600 hidden lg:table-cell">{a.lipides ?? "—"} g</td>
+                                    <td class="px-6 py-4 text-right">
+                                        <button
+                                            class="delete-btn text-red-400 hover:text-red-600 text-xs font-semibold transition cursor-pointer"
+                                            data-id={a.id}
+                                            data-collection="Aliments"
+                                            data-nom={a.nom}
+                                        >
+                                            Supprimer
+                                        </button>
+                                    </td>
+                                </tr>
+                            );
+                        })}
+                    </tbody>
+                </table>
+                {aliments.length === 0 && (
+                    <p class="text-center text-gray-400 py-10">Aucun aliment</p>
+                )}
+            </div>
+        </main>
+    </div>
+</Layout>
+
+<script>
+    document.querySelectorAll<HTMLButtonElement>(".delete-btn").forEach(btn => {
+        btn.addEventListener("click", async () => {
+            const id = btn.dataset.id!;
+            const nom = btn.dataset.nom ?? "cet élément";
+            const collection = btn.dataset.collection!;
+
+            if (!confirm(`Supprimer "${nom}" définitivement ?`)) return;
+
+            btn.textContent = "...";
+            btn.disabled = true;
+
+            const res = await fetch("/apis/admin-delete", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ collection, id }),
+            });
+
+            if (res.ok) {
+                btn.closest("tr")?.remove();
+            } else {
+                btn.textContent = "Erreur";
+                btn.disabled = false;
+            }
+        });
+    });
+</script>
