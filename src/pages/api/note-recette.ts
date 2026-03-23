@@ -1,4 +1,5 @@
 import type { APIRoute } from "astro";
+import { createAdminPb } from "../../utils/pb";
 
 export const POST: APIRoute = async ({ locals, request }) => {
     if (!locals.pb.authStore.isValid) {
@@ -25,12 +26,9 @@ export const POST: APIRoute = async ({ locals, request }) => {
             await locals.pb.collection("Notes").create({ recette: recetteId, user: userId, valeur }, { requestKey: null });
         }
 
-        await locals.pb.collection("_superusers").authWithPassword(
-            import.meta.env.PB_EMAIL,
-            import.meta.env.PB_PASSWORD
-        );
+        const pbAdmin = await createAdminPb();
 
-        const toutes = await locals.pb.collection("Notes").getFullList({
+        const toutes = await pbAdmin.collection("Notes").getFullList({
             filter: `recette = "${recetteId}"`,
             requestKey: null,
         });
@@ -39,7 +37,7 @@ export const POST: APIRoute = async ({ locals, request }) => {
             ? Math.round((toutes.reduce((s: number, n: any) => s + n.valeur, 0) / toutes.length) * 10) / 10
             : 0;
 
-        await locals.pb.collection("Recettes").update(recetteId, { note_moyenne: moyenne }, { requestKey: null });
+        await pbAdmin.collection("Recettes").update(recetteId, { note_moyenne: moyenne }, { requestKey: null });
 
         return new Response(JSON.stringify({ moyenne, total: toutes.length }), { status: 200 });
     } catch (e: any) {

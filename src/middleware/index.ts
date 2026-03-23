@@ -1,13 +1,9 @@
-import PocketBase from "pocketbase";
-
 import { defineMiddleware } from "astro/middleware";
-
-const pocketbaseUrl = import.meta.env.POCKETBASE_URL;
-
+import { createPb } from "../utils/pb";
 
 export const onRequest = defineMiddleware(
   async ({ locals, request, isPrerendered }: any, next: () => any) => {
-    locals.pb = new PocketBase(pocketbaseUrl);
+    locals.pb = createPb();
 
     if (!isPrerendered) {
       locals.pb.authStore.loadFromCookie(request.headers.get("cookie") || "");
