@@ -37,7 +37,14 @@ function imageUrl(recette: any) {
 <Layout showHeader titrePage="Recettes">
     <div data-pb-url={pbUrl} class="bg-tertiary text-center flex flex-col pt-30 md:pt-35 pb-50 gap-16 px-5 sm:px-7 md:px-10 lg:px-20">
         <div class="flex flex-col items-center gap-8">
-            <h1 class="font-modak text-secondary text-4xl sm:text-5xl uppercase">Nos recettes</h1>
+            <div class="flex items-center gap-4">
+                <h1 class="font-modak text-secondary text-4xl sm:text-5xl uppercase">Nos recettes</h1>
+                <a href="/recettes/nouvelle"
+                    class="bg-secondary text-tertiary font-montserrat font-extrabold rounded-full px-5 py-2 text-sm hover:opacity-90 transition"
+                    style="letter-spacing:0.5px">
+                    + Ajouter
+                </a>
+            </div>
 
             <div class="relative flex items-center">
                 <input

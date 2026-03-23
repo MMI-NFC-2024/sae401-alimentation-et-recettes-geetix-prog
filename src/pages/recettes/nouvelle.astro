@@ -1,0 +1,290 @@
+---
+import Layout from "../../layouts/Layout.astro";
+
+const { locals, redirect } = Astro;
+if (!locals.pb.authStore.isValid) return redirect("/");
+---
+
+<Layout showHeader titrePage="Recettes">
+<div class="min-h-screen bg-tertiary font-montserrat pt-28 md:pt-36 pb-24 px-5 sm:px-7 md:px-10 lg:px-20">
+
+    <div class="max-w-2xl mx-auto flex flex-col gap-8">
+
+        <div class="flex items-center gap-4">
+            <a href="/recettes" class="text-secondary/60 hover:text-secondary transition text-sm font-bold">← Retour</a>
+            <h1 class="font-modak text-secondary text-4xl uppercase">Nouvelle recette</h1>
+        </div>
+
+        <form id="recette-form" enctype="multipart/form-data" class="flex flex-col gap-8">
+
+            <div class="bg-white/60 rounded-2xl p-6 flex flex-col gap-4">
+                <h2 class="font-montserrat font-extrabold text-secondary uppercase tracking-wide text-sm">Informations générales</h2>
+
+                <div class="flex flex-col gap-1">
+                    <label class="font-montserrat font-bold text-dark text-sm">Titre *</label>
+                    <input name="titre" type="text" required placeholder="Ex : Omelette aux épinards"
+                        class="bg-white rounded-xl px-4 py-3 font-montserrat text-dark text-sm outline-none focus:ring-2 focus:ring-secondary" />
+                </div>
+
+                <div class="flex flex-col gap-1">
+                    <label class="font-montserrat font-bold text-dark text-sm">Description</label>
+                    <textarea name="description" rows="3" placeholder="Décrivez votre recette..."
+                        class="bg-white rounded-xl px-4 py-3 font-montserrat text-dark text-sm outline-none focus:ring-2 focus:ring-secondary resize-none"></textarea>
+                </div>
+
+                <div class="flex flex-col gap-1">
+                    <label class="font-montserrat font-bold text-dark text-sm">Image</label>
+                    <input name="image" type="file" accept="image/*"
+                        class="bg-white rounded-xl px-4 py-3 font-montserrat text-dark text-sm file:mr-3 file:bg-secondary file:text-tertiary file:border-0 file:rounded-full file:px-4 file:py-1 file:font-bold file:text-xs file:cursor-pointer" />
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="flex flex-col gap-1">
+                        <label class="font-montserrat font-bold text-dark text-sm">Temps (min) *</label>
+                        <input name="temps_preparation" type="number" min="1" required placeholder="30"
+                            class="bg-white rounded-xl px-4 py-3 font-montserrat text-dark text-sm outline-none focus:ring-2 focus:ring-secondary" />
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="font-montserrat font-bold text-dark text-sm">Portions *</label>
+                        <input name="nb_portions" type="number" min="1" required placeholder="4"
+                            class="bg-white rounded-xl px-4 py-3 font-montserrat text-dark text-sm outline-none focus:ring-2 focus:ring-secondary" />
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="flex flex-col gap-1">
+                        <label class="font-montserrat font-bold text-dark text-sm">Difficulté *</label>
+                        <select name="difficulte" required
+                            class="bg-white rounded-xl px-4 py-3 font-montserrat text-dark text-sm outline-none focus:ring-2 focus:ring-secondary">
+                            <option value="">— Choisir —</option>
+                            <option value="facile">Facile</option>
+                            <option value="moyen">Moyen</option>
+                            <option value="difficile">Difficile</option>
+                        </select>
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="font-montserrat font-bold text-dark text-sm">Objectif</label>
+                        <select name="objectif"
+                            class="bg-white rounded-xl px-4 py-3 font-montserrat text-dark text-sm outline-none focus:ring-2 focus:ring-secondary">
+                            <option value="">— Aucun —</option>
+                            <option value="perdre du poids">Perdre du poids</option>
+                            <option value="manger sain">Manger sain</option>
+                            <option value="booster son énergie">Booster son énergie</option>
+                            <option value="prendre de la masse">Prendre de la masse</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-secondary rounded-2xl p-6 flex flex-col gap-4">
+                <h2 class="font-montserrat font-extrabold text-tertiary uppercase tracking-wide text-sm">Ingrédients</h2>
+
+                <div class="flex flex-col gap-2">
+                    <div class="relative">
+                        <input id="ing-search" type="text" placeholder="Rechercher un aliment..."
+                            class="w-full bg-white/10 rounded-xl px-4 py-3 font-montserrat text-white placeholder-white/50 text-sm outline-none focus:ring-2 focus:ring-tertiary" />
+                        <ul id="ing-suggestions" class="hidden absolute z-10 w-full bg-white rounded-xl mt-1 shadow-lg overflow-hidden"></ul>
+                    </div>
+
+                    <div id="ing-add-row" class="hidden items-center gap-2">
+                        <span id="ing-selected-name" class="font-montserrat font-bold text-white text-sm flex-1 truncate"></span>
+                        <input id="ing-quantite" type="number" min="0.1" step="0.1" placeholder="Qté"
+                            class="w-20 bg-white/10 rounded-xl px-3 py-2 font-montserrat text-white text-sm outline-none focus:ring-2 focus:ring-tertiary" />
+                        <select id="ing-unite"
+                            class="bg-white/10 rounded-xl px-3 py-2 font-montserrat text-white text-sm outline-none focus:ring-2 focus:ring-tertiary">
+                            <option value="g">g</option>
+                            <option value="ml">ml</option>
+                            <option value="c.à.s">c.à.s</option>
+                            <option value="pièce">pièce</option>
+                        </select>
+                        <button type="button" id="ing-add-btn"
+                            class="bg-tertiary text-secondary font-montserrat font-extrabold text-xs px-4 py-2 rounded-full cursor-pointer hover:opacity-90 transition">
+                            Ajouter
+                        </button>
+                    </div>
+                </div>
+
+                <ul id="ing-list" class="flex flex-col gap-2"></ul>
+                <p id="ing-empty" class="font-montserrat text-white/40 text-xs italic text-center">Aucun ingrédient ajouté</p>
+            </div>
+
+            <div class="bg-white/60 rounded-2xl p-6 flex flex-col gap-4">
+                <h2 class="font-montserrat font-extrabold text-secondary uppercase tracking-wide text-sm">Étapes de préparation</h2>
+
+                <ol id="etapes-list" class="flex flex-col gap-3"></ol>
+                <p id="etapes-empty" class="font-montserrat text-dark/40 text-xs italic text-center">Aucune étape ajoutée</p>
+
+                <div class="flex gap-2">
+                    <textarea id="etape-input" rows="2" placeholder="Décrivez cette étape..."
+                        class="flex-1 bg-white rounded-xl px-4 py-3 font-montserrat text-dark text-sm outline-none focus:ring-2 focus:ring-secondary resize-none"></textarea>
+                    <button type="button" id="etape-add-btn"
+                        class="bg-secondary text-tertiary font-montserrat font-extrabold text-xs px-4 rounded-xl cursor-pointer hover:opacity-90 transition self-stretch">
+                        Ajouter
+                    </button>
+                </div>
+            </div>
+
+            <div id="form-error" class="hidden bg-red-100 text-red-700 font-montserrat text-sm rounded-xl px-4 py-3"></div>
+
+            <button type="submit" id="submit-btn"
+                class="bg-secondary text-tertiary font-montserrat font-extrabold rounded-full py-4 text-sm cursor-pointer hover:opacity-90 transition"
+                style="letter-spacing:1px">
+                PUBLIER LA RECETTE
+            </button>
+
+        </form>
+    </div>
+</div>
+</Layout>
+
+<script>
+    const ingSearch = document.getElementById("ing-search") as HTMLInputElement;
+    const ingSuggestions = document.getElementById("ing-suggestions") as HTMLUListElement;
+    const ingAddRow = document.getElementById("ing-add-row") as HTMLDivElement;
+    const ingSelectedName = document.getElementById("ing-selected-name")!;
+    const ingQuantite = document.getElementById("ing-quantite") as HTMLInputElement;
+    const ingUnite = document.getElementById("ing-unite") as HTMLSelectElement;
+    const ingAddBtn = document.getElementById("ing-add-btn")!;
+    const ingList = document.getElementById("ing-list")!;
+    const ingEmpty = document.getElementById("ing-empty")!;
+
+    const etapeInput = document.getElementById("etape-input") as HTMLTextAreaElement;
+    const etapeAddBtn = document.getElementById("etape-add-btn")!;
+    const etapesList = document.getElementById("etapes-list")!;
+    const etapesEmpty = document.getElementById("etapes-empty")!;
+
+    const form = document.getElementById("recette-form") as HTMLFormElement;
+    const submitBtn = document.getElementById("submit-btn") as HTMLButtonElement;
+    const formError = document.getElementById("form-error")!;
+
+    let selectedAliment: { id: string; nom: string } | null = null;
+    const ingredients: { alimentId: string; nom: string; quantite: number; unite: string }[] = [];
+    const etapes: string[] = [];
+
+    let searchDebounce: any;
+    ingSearch.addEventListener("input", () => {
+        clearTimeout(searchDebounce);
+        const q = ingSearch.value.trim();
+        if (!q) { ingSuggestions.classList.add("hidden"); return; }
+        searchDebounce = setTimeout(async () => {
+            const res = await fetch(`/api/aliments-search?q=${encodeURIComponent(q)}`);
+            const items = await res.json();
+            if (!Array.isArray(items) || items.length === 0) {
+                ingSuggestions.classList.add("hidden");
+                return;
+            }
+            ingSuggestions.innerHTML = items.map((a: any) => `
+                <li data-id="${a.id}" data-nom="${a.nom}"
+                    class="px-4 py-2 font-montserrat text-dark text-sm cursor-pointer hover:bg-secondary hover:text-white transition">
+                    ${a.nom}
+                </li>
+            `).join("");
+            ingSuggestions.classList.remove("hidden");
+        }, 250);
+    });
+
+    ingSuggestions.addEventListener("click", (e) => {
+        const li = (e.target as HTMLElement).closest<HTMLElement>("li");
+        if (!li) return;
+        selectedAliment = { id: li.dataset.id!, nom: li.dataset.nom! };
+        ingSearch.value = li.dataset.nom!;
+        ingSuggestions.classList.add("hidden");
+        ingSelectedName.textContent = li.dataset.nom!;
+        ingAddRow.classList.remove("hidden");
+        ingAddRow.classList.add("flex");
+        ingQuantite.value = "";
+        ingQuantite.focus();
+    });
+
+    document.addEventListener("click", (e) => {
+        if (!ingSearch.contains(e.target as Node) && !ingSuggestions.contains(e.target as Node)) {
+            ingSuggestions.classList.add("hidden");
+        }
+    });
+
+    ingAddBtn.addEventListener("click", () => {
+        if (!selectedAliment || !ingQuantite.value) return;
+        const q = parseFloat(ingQuantite.value);
+        if (isNaN(q) || q <= 0) return;
+
+        ingredients.push({ alimentId: selectedAliment.id, nom: selectedAliment.nom, quantite: q, unite: ingUnite.value });
+        renderIngredients();
+
+        selectedAliment = null;
+        ingSearch.value = "";
+        ingAddRow.classList.add("hidden");
+        ingAddRow.classList.remove("flex");
+    });
+
+    function renderIngredients() {
+        ingEmpty.classList.toggle("hidden", ingredients.length > 0);
+        ingList.innerHTML = ingredients.map((ing, i) => `
+            <li class="flex items-center justify-between bg-white/10 rounded-xl px-4 py-2">
+                <span class="font-montserrat text-white text-sm">${ing.quantite}${ing.unite === "g" || ing.unite === "ml" ? ing.unite : " " + ing.unite} de ${ing.nom}</span>
+                <button type="button" data-i="${i}" class="ing-remove font-montserrat text-white/50 hover:text-red-400 text-xs transition cursor-pointer">✕</button>
+            </li>
+        `).join("");
+    }
+
+    ingList.addEventListener("click", (e) => {
+        const btn = (e.target as HTMLElement).closest<HTMLElement>(".ing-remove");
+        if (!btn) return;
+        ingredients.splice(parseInt(btn.dataset.i!), 1);
+        renderIngredients();
+    });
+
+    etapeAddBtn.addEventListener("click", addEtape);
+    etapeInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); addEtape(); }
+    });
+
+    function addEtape() {
+        const txt = etapeInput.value.trim();
+        if (!txt) return;
+        etapes.push(txt);
+        renderEtapes();
+        etapeInput.value = "";
+        etapeInput.focus();
+    }
+
+    function renderEtapes() {
+        etapesEmpty.classList.toggle("hidden", etapes.length > 0);
+        etapesList.innerHTML = etapes.map((e, i) => `
+            <li class="flex gap-3 items-start">
+                <span class="font-montserrat font-extrabold text-secondary flex-shrink-0 mt-0.5" style="min-width:1.5rem">${i + 1}.</span>
+                <span class="font-montserrat text-dark text-sm flex-1 leading-relaxed">${e}</span>
+                <button type="button" data-i="${i}" class="etape-remove font-montserrat text-dark/30 hover:text-red-400 text-xs transition cursor-pointer flex-shrink-0 mt-0.5">✕</button>
+            </li>
+        `).join("");
+    }
+
+    etapesList.addEventListener("click", (e) => {
+        const btn = (e.target as HTMLElement).closest<HTMLElement>(".etape-remove");
+        if (!btn) return;
+        etapes.splice(parseInt(btn.dataset.i!), 1);
+        renderEtapes();
+    });
+
+    form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        formError.classList.add("hidden");
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Publication...";
+
+        const fd = new FormData(form);
+        fd.set("ingredients", JSON.stringify(ingredients));
+        fd.set("etapes",      JSON.stringify(etapes));
+
+        const res = await fetch("/api/recette-create", { method: "POST", body: fd });
+        const data = await res.json();
+
+        if (res.ok) {
+            window.location.href = `/recettes/${data.id}`;
+        } else {
+            formError.textContent = data.error ?? "Une erreur est survenue.";
+            formError.classList.remove("hidden");
+            submitBtn.disabled = false;
+            submitBtn.textContent = "PUBLIER LA RECETTE";
+        }
+    });
+</script>
