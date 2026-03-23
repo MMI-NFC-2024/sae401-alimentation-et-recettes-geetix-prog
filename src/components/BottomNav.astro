@@ -7,6 +7,13 @@ interface Props {
     currentPage?: string;
 }
 
+const { locals } = Astro;
+
+const user = locals.pb.authStore.record;
+const avatarUrl = user?.avatar
+    ? locals.pb.files.getURL(user, user.avatar)
+    : null;
+
 const { currentPage = "" } = Astro.props;
 
 const links = [
@@ -48,10 +55,9 @@ const links = [
         </li>
 
         <li>
-            <a href="/conseils" class={`flex flex-col items-center gap-1 hover:scale-110 transition ease-in-out ${currentPage === "/conseils" ? "opacity-100" : "opacity-40"}`}>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#D63384" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-9 h-9">
-                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                </svg>
+            <a href="/profil" class={`flex flex-col items-center gap-1 hover:scale-110 transition ease-in-out ${currentPage === "/conseils" ? "opacity-100" : "opacity-75"}`}>
+                <img src={avatarUrl} alt="avatar" class="w-9 h-9 rounded-full" />
+
             </a>
         </li>
 
