@@ -1,0 +1,136 @@
+---
+import Layout from "../../layouts/Layout.astro";
+
+const { locals, redirect, params } = Astro;
+
+if (!locals.pb.authStore.isValid) return redirect("/");
+
+let recette: any;
+try {
+    recette = await locals.pb.collection("Recettes").getOne(params.id!, {
+        expand: "Recette_aliments_via_recette.aliment,Etapes_via_recette",
+        requestKey: null,
+    });
+} catch {
+    return redirect("/recettes");
+}
+
+const imageUrl = recette.image
+    ? locals.pb.files.getURL(recette, recette.image)
+    : null;
+
+const recetteAliments: any[] = recette.expand?.Recette_aliments_via_recette ?? [];
+const etapes: any[] = (recette.expand?.Etapes_via_recette ?? []).sort((a: any, b: any) => a.numero - b.numero);
+
+const ingredientsByGroupe = recetteAliments.reduce((acc: Record<string, any[]>, ra: any) => {
+    const aliment = Array.isArray(ra.expand?.aliment) ? ra.expand.aliment[0] : ra.expand?.aliment;
+    if (!aliment) return acc;
+    const groupe = aliment.categorie ?? "Autres";
+    if (!acc[groupe]) acc[groupe] = [];
+    acc[groupe].push({ nom: aliment.nom, quantite: ra.quantite, unite: ra.unite });
+    return acc;
+}, {} as Record<string, any[]>);
+
+const note = Math.round(recette.note_moyenne ?? 0);
+---
+
+<Layout showHeader titrePage="Recettes">
+    <div class="min-h-screen bg-tertiary font-montserrat pt-28 md:pt-36 pb-24 px-5 sm:px-7 md:px-10 lg:px-20 flex flex-col gap-10">
+
+        <div class="flex flex-col md:flex-row gap-6 md:gap-10 items-start">
+            {imageUrl && (
+                <div class="w-full md:w-2/5 flex-shrink-0">
+                    <img
+                        src={imageUrl}
+                        alt={recette.titre}
+                        class="w-full rounded-xl object-cover max-h-72 md:max-h-none md:h-72 lg:h-80"
+                    />
+                </div>
+            )}
+
+            <div class="flex flex-col gap-3 md:w-3/5">
+                <h1
+                    class="font-montserrat font-extrabold uppercase text-secondary"
+                    style="font-size:28px"
+                >
+                    {recette.titre}
+                </h1>
+
+                <p class="font-montserrat font-normal text-dark text-sm leading-relaxed mt-2">
+                    {recette.description}
+                </p>
+
+                <div class="flex flex-wrap items-center gap-3 mt-1">
+                    {recette.temps_preparation && (
+                        <span class="bg-secondary text-white font-montserrat font-bold rounded-full" style="font-size:12px; padding:4px 14px">
+                            ⏱ {recette.temps_preparation} min
+                        </span>
+                    )}
+                    {recette.nb_portions && (
+                        <span class="bg-secondary text-white font-montserrat font-bold rounded-full" style="font-size:12px; padding:4px 14px">
+                            🍽 {recette.nb_portions} portion{recette.nb_portions > 1 ? "s" : ""}
+                        </span>
+                    )}
+                    {note > 0 && (
+                        <div class="flex items-center gap-0.5 ml-1">
+                            {Array.from({ length: 5 }, (_, i) => (
+                                <span style="font-size:20px" class={i < note ? "text-secondary" : "text-dark/20"}>
+                                    ★
+                                </span>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+
+        <div class="flex flex-col md:flex-row gap-0 md:gap-0 rounded-2xl overflow-hidden">
+
+            <div class="bg-secondary md:w-[35%] p-5 flex flex-col gap-2">
+                <h2 class="font-montserrat font-extrabold text-tertiary uppercase tracking-wide">
+                    Ingrédients
+                </h2>
+
+                {Object.keys(ingredientsByGroupe).length === 0 ? (
+                    <p class="font-montserrat text-white/50 text-sm italic mt-2">Aucun ingrédient renseigné.</p>
+                ) : (
+                    Object.entries(ingredientsByGroupe).map(([groupe, items]) => (
+                        <div class="mt-4">
+                            <p class="font-montserrat font-bold text-white uppercase text-xs tracking-wider mb-2">
+                                {groupe}
+                            </p>
+                            <ul class="flex flex-col gap-0.5">
+                                {(items as any[]).map((item: any) => (
+                                    <li class="font-montserrat text-white" style="font-size:13px; line-height:1.8">
+                                        · {item.quantite}{item.unite === "g" || item.unite === "ml" ? item.unite : " " + item.unite} de {item.nom}
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    ))
+                )}
+            </div>
+
+            <div class="bg-tertiary md:w-[65%] p-5 flex flex-col gap-2 border border-secondary/20 md:border-l-0">
+                <h2 class="font-montserrat font-extrabold text-secondary uppercase tracking-wide text-center">
+                    Préparation
+                </h2>
+
+                {etapes.length === 0 ? (
+                    <p class="font-montserrat text-dark/50 text-sm italic mt-2 text-center">Aucune étape renseignée.</p>
+                ) : (
+                    <ol class="flex flex-col gap-3 mt-3">
+                        {etapes.map((e: any) => (
+                            <li class="font-montserrat text-dark flex gap-3" style="font-size:14px; line-height:1.7">
+                                <span class="font-extrabold text-secondary flex-shrink-0" style="min-width:1.5rem">
+                                    {e.numero}.
+                                </span>
+                                <span>{e.description}</span>
+                            </li>
+                        ))}
+                    </ol>
+                )}
+            </div>
+        </div>
+    </div>
+</Layout>
