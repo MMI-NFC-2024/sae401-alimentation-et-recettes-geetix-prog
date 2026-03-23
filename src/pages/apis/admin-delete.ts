@@ -1,14 +1,12 @@
 import type { APIRoute } from "astro";
 import { createAdminPb } from "../../utils/pb";
+import { loadAdminAuth } from "../../utils/adminAuth";
 
 const ALLOWED_COLLECTIONS = ["Recettes", "Aliments", "Commentaires"];
 
-export const POST: APIRoute = async ({ locals, request }) => {
-    if (!locals.pb.authStore.isValid) {
-        return new Response(JSON.stringify({ error: "Non autorisé" }), { status: 401 });
-    }
-
-    if (locals.pb.authStore.record?.email !== import.meta.env.PB_EMAIL) {
+export const POST: APIRoute = async ({ request }) => {
+    const adminPb = loadAdminAuth(request.headers.get("cookie"));
+    if (!adminPb.authStore.isValid) {
         return new Response(JSON.stringify({ error: "Accès refusé" }), { status: 403 });
     }
 

@@ -1,11 +1,12 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import { createAdminPb } from "../../utils/pb";
+import { loadAdminAuth } from "../../utils/adminAuth";
 
-const { locals, redirect } = Astro;
+const { request, redirect } = Astro;
 
-if (!locals.pb.authStore.isValid) return redirect("/");
-if (locals.pb.authStore.record?.email !== import.meta.env.PB_EMAIL) return redirect("/accueil");
+const adminPb = loadAdminAuth(request.headers.get("cookie"));
+if (!adminPb.authStore.isValid) return redirect("/admin/login");
 
 const pbAdmin = await createAdminPb();
 const utilisateurs = await pbAdmin.collection("users").getFullList({
@@ -25,7 +26,12 @@ const pbUrl = locals.pb.baseURL;
             <a href="/admin/recettes" class="text-white/60 hover:text-white transition">Recettes</a>
             <a href="/admin/aliments" class="text-white/60 hover:text-white transition">Aliments</a>
             <a href="/admin/utilisateurs" class="text-white hover:text-tertiary transition">Utilisateurs</a>
-            <a href="/accueil" class="ml-auto text-white/60 hover:text-white transition">← Retour au site</a>
+            <div class="ml-auto flex items-center gap-4">
+                <a href="/accueil" class="text-white/60 hover:text-white transition text-sm">← Retour au site</a>
+                <form method="POST" action="/apis/admin-logout">
+                    <button type="submit" class="text-red-400 hover:text-red-300 text-sm font-semibold transition cursor-pointer">Déconnexion</button>
+                </form>
+            </div>
         </nav>
 
         <main class="px-6 py-10 max-w-6xl mx-auto flex flex-col gap-6">

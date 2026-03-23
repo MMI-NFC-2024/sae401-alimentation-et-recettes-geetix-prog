@@ -1,0 +1,80 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { createPb } from "../../utils/pb";
+import { loadAdminAuth } from "../../utils/adminAuth";
+
+const { request, redirect } = Astro;
+
+const adminPb = loadAdminAuth(request.headers.get("cookie"));
+if (adminPb.authStore.isValid) return redirect("/admin");
+
+let error = "";
+
+if (request.method === "POST") {
+    const form = await request.formData();
+    const email = form.get("email") as string;
+    const password = form.get("password") as string;
+
+    try {
+        const pb = createPb();
+        await pb.collection("_superusers").authWithPassword(email, password);
+        const cookie = pb.authStore.exportToCookie(
+            { secure: true, sameSite: "Strict", httpOnly: true },
+            "pb_admin_auth"
+        );
+
+        return new Response(null, {
+            status: 302,
+            headers: { "Location": "/admin", "Set-Cookie": cookie },
+        });
+    } catch {
+        error = "Identifiants incorrects.";
+    }
+}
+---
+
+<Layout titrePage="Admin - Connexion">
+    <div class="min-h-screen bg-gray-950 flex items-center justify-center font-montserrat">
+        <div class="bg-gray-900 rounded-3xl p-10 w-full max-w-sm flex flex-col gap-6 shadow-2xl">
+            <div class="text-center">
+                <h1 class="font-modak text-4xl text-white tracking-wide">NŪRA</h1>
+                <p class="text-gray-400 text-sm mt-1">Accès backoffice superuser</p>
+            </div>
+
+            {error && (
+                <p class="bg-red-500/10 text-red-400 text-sm text-center py-2 px-4 rounded-xl">{error}</p>
+            )}
+
+            <form method="POST" class="flex flex-col gap-4">
+                <div class="flex flex-col gap-1">
+                    <label class="text-gray-400 text-xs uppercase font-semibold tracking-wider">Email</label>
+                    <input
+                        name="email"
+                        type="email"
+                        required
+                        placeholder="superuser@example.com"
+                        class="bg-gray-800 text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-white/20"
+                    />
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label class="text-gray-400 text-xs uppercase font-semibold tracking-wider">Mot de passe</label>
+                    <input
+                        name="password"
+                        type="password"
+                        required
+                        placeholder="••••••••"
+                        class="bg-gray-800 text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-white/20"
+                    />
+                </div>
+                <button
+                    type="submit"
+                    class="mt-2 bg-white text-gray-900 font-bold text-sm py-3 rounded-xl hover:bg-gray-100 transition cursor-pointer"
+                >
+                    Se connecter
+                </button>
+            </form>
+
+            <a href="/accueil" class="text-center text-gray-600 text-xs hover:text-gray-400 transition">← Retour au site</a>
+        </div>
+    </div>
+</Layout>
