@@ -276,7 +276,7 @@ const pbUrl = locals.pb.baseURL;
             <div id="comments-list" class="flex flex-col gap-4">
                 {commentaires.map((c: any) => {
                     const u = c.expand?.user;
-                    const avatar = u?.avatar ? `${pbUrl}/api/files/${u.collectionId}/${u.id}/${u.avatar}` : null;
+                    const avatar = u?.avatar ? `${pbUrl}/apis/files/${u.collectionId}/${u.id}/${u.avatar}` : null;
                     const isOwn = c.user === currentUserId;
                     const date = new Date((c.created ?? "").replace(" ", "T")).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
                     return (
@@ -365,7 +365,7 @@ const pbUrl = locals.pb.baseURL;
 
     function buildCard(c: any): HTMLElement {
         const u = c.expand?.user;
-        const avatar = u?.avatar ? `${pbUrl}/api/files/${u.collectionId}/${u.id}/${u.avatar}` : null;
+        const avatar = u?.avatar ? `${pbUrl}/apis/files/${u.collectionId}/${u.id}/${u.avatar}` : null;
         const isOwn  = c.user === currentUser;
         const div = document.createElement("div");
         div.className = "comment-item bg-white/60 rounded-2xl p-4 flex gap-3";
@@ -399,7 +399,7 @@ const pbUrl = locals.pb.baseURL;
         if (!btn) return;
         const id = btn.dataset.id!;
         btn.textContent = "...";
-        const res = await fetch("/api/comment-delete", {
+        const res = await fetch("/apis/comment-delete", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ id }),
@@ -422,7 +422,7 @@ const pbUrl = locals.pb.baseURL;
         submitBtn.disabled = true;
         submitBtn.textContent = "...";
 
-        const res = await fetch("/api/comment-add", {
+        const res = await fetch("/apis/comment-add", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ recetteId, contenu }),
@@ -466,7 +466,7 @@ const pbUrl = locals.pb.baseURL;
             const valeur = parseInt(btn.dataset.value!);
             starBtns.forEach(b => (b.disabled = true));
 
-            const res = await fetch("/api/note-recette", {
+            const res = await fetch("/apis/note-recette", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ recetteId, valeur }),

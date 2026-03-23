@@ -167,7 +167,7 @@ if (!locals.pb.authStore.isValid) return redirect("/");
         const q = ingSearch.value.trim();
         if (!q) { ingSuggestions.classList.add("hidden"); return; }
         searchDebounce = setTimeout(async () => {
-            const res = await fetch(`/api/aliments-search?q=${encodeURIComponent(q)}`);
+            const res = await fetch(`/apis/aliments-search?q=${encodeURIComponent(q)}`);
             const items = await res.json();
             if (!Array.isArray(items) || items.length === 0) {
                 ingSuggestions.classList.add("hidden");
@@ -275,7 +275,7 @@ if (!locals.pb.authStore.isValid) return redirect("/");
         fd.set("ingredients", JSON.stringify(ingredients));
         fd.set("etapes",      JSON.stringify(etapes));
 
-        const res = await fetch("/api/recette-create", { method: "POST", body: fd });
+        const res = await fetch("/apis/recette-create", { method: "POST", body: fd });
         const data = await res.json();
 
         if (res.ok) {
