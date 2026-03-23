@@ -44,10 +44,10 @@ const ingredientsByGroupe = recetteAliments.reduce((acc: Record<string, Ingredie
         nom: aliment.nom,
         quantite: ra.quantite,
         unite: ra.unite,
-        calories:  Math.round((aliment.calories  ?? 0) * factor),
+        calories: Math.round((aliment.calories ?? 0) * factor),
         proteines: Math.round((aliment.proteines ?? 0) * factor),
-        glucides:  Math.round((aliment.glucides  ?? 0) * factor),
-        lipides:   Math.round((aliment.lipides   ?? 0) * factor),
+        glucides: Math.round((aliment.glucides ?? 0) * factor),
+        lipides: Math.round((aliment.lipides ?? 0) * factor),
     };
     acc[groupe].push(item);
     ingredientsFlat.push(item);
@@ -60,13 +60,29 @@ const totauxBase = ingredientsFlat.reduce(
     { calories: 0, proteines: 0, glucides: 0, lipides: 0 }
 );
 const totauxPortion = {
-    calories:  Math.round(totauxBase.calories  / basePortions),
+    calories: Math.round(totauxBase.calories / basePortions),
     proteines: Math.round(totauxBase.proteines / basePortions),
-    glucides:  Math.round(totauxBase.glucides  / basePortions),
-    lipides:   Math.round(totauxBase.lipides   / basePortions),
+    glucides: Math.round(totauxBase.glucides / basePortions),
+    lipides: Math.round(totauxBase.lipides / basePortions),
 };
 
-const note = Math.round(recette.note_moyenne ?? 0);
+const noteMoyenne: number = recette.note_moyenne ?? 0;
+
+const noteUser = await locals.pb.collection("Notes").getFirstListItem(
+    `recette = "${recette.id}" && user = "${locals.pb.authStore.record.id}"`,
+    { requestKey: null }
+).catch(() => null);
+const userValeur: number = noteUser?.valeur ?? 0;
+
+const commentaires = await locals.pb.collection("Commentaires").getFullList({
+    filter: `recette = "${recette.id}"`,
+    expand: "user",
+    sort: "-created",
+    requestKey: null,
+});
+
+const currentUserId: string = locals.pb.authStore.record.id;
+const pbUrl = import.meta.env.POCKETBASE_URL;
 ---
 
 <Layout showHeader titrePage="Recettes">
@@ -106,15 +122,33 @@ const note = Math.round(recette.note_moyenne ?? 0);
                             🍽 {recette.nb_portions} portion{recette.nb_portions > 1 ? "s" : ""}
                         </span>
                     )}
-                    {note > 0 && (
-                        <div class="flex items-center gap-0.5 ml-1">
+                </div>
+
+                <div
+                    id="rating-root"
+                    data-recette-id={recette.id}
+                    data-user-valeur={userValeur}
+                    class="flex flex-col gap-1 mt-1"
+                >
+                    <div class="flex items-center gap-2">
+                        <div id="stars-display" class="flex gap-0.5">
                             {Array.from({ length: 5 }, (_, i) => (
-                                <span style="font-size:20px" class={i < note ? "text-secondary" : "text-dark/20"}>
-                                    ★
-                                </span>
+                                <button
+                                    class="star-btn cursor-pointer transition-transform hover:scale-110"
+                                    data-value={i + 1}
+                                    style="font-size:26px; background:none; border:none; padding:0; line-height:1"
+                                >
+                                    <span class={i < userValeur ? "text-secondary" : "text-dark/20"}>★</span>
+                                </button>
                             ))}
                         </div>
-                    )}
+                        <span id="note-label" class="font-montserrat text-dark/50 text-xs">
+                            {noteMoyenne > 0 ? `${noteMoyenne}/5` : "Pas encore noté"}
+                        </span>
+                    </div>
+                    <p class="font-montserrat text-dark/40 text-xs">
+                        {userValeur > 0 ? "Votre note" : "Notez cette recette"}
+                    </p>
                 </div>
             </div>
         </div>
@@ -133,17 +167,17 @@ const note = Math.round(recette.note_moyenne ?? 0);
                     <span class="font-montserrat text-white/70 text-sm">Pour</span>
                     <button id="portions-minus" class="w-8 h-8 rounded-full bg-tertiary text-secondary font-extrabold text-lg flex items-center justify-center hover:opacity-80 transition cursor-pointer">−</button>
                     <span id="portions-display" class="font-montserrat font-extrabold text-tertiary text-xl w-6 text-center">{basePortions}</span>
-                    <button id="portions-plus"  class="w-8 h-8 rounded-full bg-tertiary text-secondary font-extrabold text-lg flex items-center justify-center hover:opacity-80 transition cursor-pointer">+</button>
+                    <button id="portions-plus" class="w-8 h-8 rounded-full bg-tertiary text-secondary font-extrabold text-lg flex items-center justify-center hover:opacity-80 transition cursor-pointer">+</button>
                     <span class="font-montserrat text-white/70 text-sm">portion{basePortions > 1 ? "s" : ""}</span>
                 </div>
             </div>
 
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {[
-                    { label: "Calories",   key: "calories",  unit: "kcal", val: totauxPortion.calories  },
-                    { label: "Protéines",  key: "proteines", unit: "g",    val: totauxPortion.proteines },
-                    { label: "Glucides",   key: "glucides",  unit: "g",    val: totauxPortion.glucides  },
-                    { label: "Lipides",    key: "lipides",   unit: "g",    val: totauxPortion.lipides   },
+                    {label: "Calories", key:"calories", unit: "kcal", val: totauxPortion.calories},
+                    {label: "Protéines", key:"proteines", unit: "g", val: totauxPortion.proteines},
+                    {label: "Glucides", key:"glucides", unit: "g", val: totauxPortion.glucides},
+                    {label: "Lipides", key:"lipides", unit: "g", val: totauxPortion.lipides},
                 ].map(m => (
                     <div class="bg-dark/30 rounded-xl p-4 flex flex-col gap-1">
                         <span class="font-montserrat text-white/60 text-xs uppercase tracking-wider">{m.label}</span>
@@ -210,17 +244,83 @@ const note = Math.round(recette.note_moyenne ?? 0);
                 )}
             </div>
         </div>
+        <div
+            id="comments-root"
+            data-recette-id={recette.id}
+            data-current-user={currentUserId}
+            data-pb-url={pbUrl}
+            class="flex flex-col gap-6"
+        >
+            <h2 class="font-montserrat font-extrabold text-secondary uppercase tracking-wide">
+                Commentaires <span id="comments-count" class="text-secondary/50 font-bold text-base">({commentaires.length})</span>
+            </h2>
+
+            <form id="comment-form" class="flex flex-col gap-3">
+                <textarea
+                    id="comment-input"
+                    rows="3"
+                    placeholder="Laissez un commentaire..."
+                    class="w-full bg-white/80 rounded-xl px-4 py-3 font-montserrat text-dark text-sm placeholder-dark/40 outline-none focus:ring-2 focus:ring-secondary resize-none"
+                ></textarea>
+                <div class="flex justify-end">
+                    <button
+                        type="submit"
+                        class="bg-secondary text-tertiary font-montserrat font-extrabold rounded-full px-6 py-2 text-sm cursor-pointer hover:opacity-90 transition"
+                        style="letter-spacing:0.5px"
+                    >
+                        PUBLIER
+                    </button>
+                </div>
+            </form>
+
+            <div id="comments-list" class="flex flex-col gap-4">
+                {commentaires.map((c: any) => {
+                    const u = c.expand?.user;
+                    const avatar = u?.avatar ? `${pbUrl}/api/files/${u.collectionId}/${u.id}/${u.avatar}` : null;
+                    const isOwn = c.user === currentUserId;
+                    const date = new Date((c.created ?? "").replace(" ", "T")).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
+                    return (
+                        <div class="comment-item bg-white/60 rounded-2xl p-4 flex gap-3" data-id={c.id}>
+                            {avatar
+                                ? <img src={avatar} alt="avatar" class="w-10 h-10 rounded-full object-cover flex-shrink-0" />
+                                : <div class="w-10 h-10 rounded-full bg-secondary flex items-center justify-center flex-shrink-0 font-montserrat font-bold text-tertiary text-sm">{u?.prenom?.[0] ?? "?"}</div>
+                            }
+                            <div class="flex flex-col gap-1 flex-1 min-w-0">
+                                <div class="flex items-center justify-between gap-2">
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-montserrat font-bold text-dark text-sm">{u?.prenom} {u?.nom}</span>
+                                        <span class="font-montserrat text-dark/40 text-xs">{date}</span>
+                                    </div>
+                                    {isOwn && (
+                                        <button
+                                            class="delete-btn font-montserrat text-xs text-dark/40 hover:text-red-500 transition cursor-pointer"
+                                            data-id={c.id}
+                                        >
+                                            Supprimer
+                                        </button>
+                                    )}
+                                </div>
+                                <p class="font-montserrat text-dark text-sm leading-relaxed">{c.contenu}</p>
+                            </div>
+                        </div>
+                    );
+                })}
+                {commentaires.length === 0 && (
+                    <p id="no-comments" class="font-montserrat text-dark/40 italic text-sm text-center py-4">Aucun commentaire pour l'instant. Soyez le premier !</p>
+                )}
+            </div>
+        </div>
     </div>
 </Layout>
 
 <script>
-    const root         = document.getElementById("calc-root")!;
+    const root = document.getElementById("calc-root")!;
     const basePortions = parseInt(root.dataset.basePortions ?? "1");
-    const totauxBase   = JSON.parse(root.dataset.totaux ?? "{}") as Record<string, number>;
+    const totauxBase = JSON.parse(root.dataset.totaux ?? "{}") as Record<string, number>;
 
-    const display      = document.getElementById("portions-display")!;
-    const btnMinus     = document.getElementById("portions-minus")!;
-    const btnPlus      = document.getElementById("portions-plus")!;
+    const display = document.getElementById("portions-display")!;
+    const btnMinus = document.getElementById("portions-minus")!;
+    const btnPlus = document.getElementById("portions-plus")!;
 
     let portions = basePortions;
 
@@ -234,9 +334,9 @@ const note = Math.round(recette.note_moyenne ?? 0);
         });
 
         document.querySelectorAll<HTMLElement>(".ingredient-item").forEach(li => {
-            const base  = parseFloat(li.dataset.base ?? "0");
+            const base = parseFloat(li.dataset.base ?? "0");
             const unite = li.dataset.unite ?? "";
-            const val   = base * factor;
+            const val = base * factor;
             const formatted = Number.isInteger(val) ? val : val.toFixed(1);
             const suffix = unite === "g" || unite === "ml" ? unite : " " + unite;
             li.querySelector(".ing-qty")!.textContent = `${formatted}${suffix}`;
@@ -244,5 +344,145 @@ const note = Math.round(recette.note_moyenne ?? 0);
     }
 
     btnMinus.addEventListener("click", () => { if (portions > 1) { portions--; update(); } });
-    btnPlus.addEventListener("click",  () => { portions++; update(); });
+    btnPlus.addEventListener("click", () => { portions++; update(); });
+</script>
+
+<script>
+    const commRoot = document.getElementById("comments-root")!;
+    const recetteId = commRoot.dataset.recetteId!;
+    const currentUser = commRoot.dataset.currentUser!;
+    const pbUrl = commRoot.dataset.pbUrl!;
+    const form = document.getElementById("comment-form") as HTMLFormElement;
+    const input = document.getElementById("comment-input") as HTMLTextAreaElement;
+    const list = document.getElementById("comments-list")!;
+    const countEl = document.getElementById("comments-count")!;
+
+    let count = parseInt(countEl.textContent?.replace(/\D/g, "") ?? "0");
+
+    function formatDate(iso: string) {
+        return new Date(iso.replace(" ", "T")).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
+    }
+
+    function buildCard(c: any): HTMLElement {
+        const u = c.expand?.user;
+        const avatar = u?.avatar ? `${pbUrl}/api/files/${u.collectionId}/${u.id}/${u.avatar}` : null;
+        const isOwn  = c.user === currentUser;
+        const div = document.createElement("div");
+        div.className = "comment-item bg-white/60 rounded-2xl p-4 flex gap-3";
+        div.dataset.id = c.id;
+        div.innerHTML = `
+            ${avatar
+                ? `<img src="${avatar}" alt="avatar" class="w-10 h-10 rounded-full object-cover flex-shrink-0" />`
+                : `<div class="w-10 h-10 rounded-full bg-secondary flex items-center justify-center flex-shrink-0 font-montserrat font-bold text-tertiary text-sm">${u?.prenom?.[0] ?? "?"}</div>`
+            }
+            <div class="flex flex-col gap-1 flex-1 min-w-0">
+                <div class="flex items-center justify-between gap-2">
+                    <div class="flex items-center gap-2">
+                        <span class="font-montserrat font-bold text-dark text-sm">${u?.prenom ?? ""} ${u?.nom ?? ""}</span>
+                        <span class="font-montserrat text-dark/40 text-xs">${formatDate(c.created)}</span>
+                    </div>
+                    ${isOwn ? `<button class="delete-btn font-montserrat text-xs text-dark/40 hover:text-red-500 transition cursor-pointer" data-id="${c.id}">Supprimer</button>` : ""}
+                </div>
+                <p class="font-montserrat text-dark text-sm leading-relaxed">${c.contenu}</p>
+            </div>
+        `;
+        return div;
+    }
+
+    function updateCount(delta: number) {
+        count += delta;
+        countEl.textContent = `(${count})`;
+    }
+
+    list.addEventListener("click", async (e) => {
+        const btn = (e.target as HTMLElement).closest<HTMLElement>(".delete-btn");
+        if (!btn) return;
+        const id = btn.dataset.id!;
+        btn.textContent = "...";
+        const res = await fetch("/api/comment-delete", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id }),
+        });
+        if (res.ok) {
+            btn.closest(".comment-item")?.remove();
+            updateCount(-1);
+            if (count === 0) {
+                list.innerHTML = `<p id="no-comments" class="font-montserrat text-dark/40 italic text-sm text-center py-4">Aucun commentaire pour l'instant. Soyez le premier !</p>`;
+            }
+        }
+    });
+
+    form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const contenu = input.value.trim();
+        if (!contenu) return;
+
+        const submitBtn = form.querySelector("button[type=submit]") as HTMLButtonElement;
+        submitBtn.disabled = true;
+        submitBtn.textContent = "...";
+
+        const res = await fetch("/api/comment-add", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ recetteId, contenu }),
+        });
+
+        submitBtn.disabled = false;
+        submitBtn.textContent = "PUBLIER";
+
+        if (res.ok) {
+            const c = await res.json();
+            const noMsg = document.getElementById("no-comments");
+            noMsg?.remove();
+            list.prepend(buildCard(c));
+            updateCount(1);
+            input.value = "";
+        }
+    });
+</script>
+
+<script>
+    const ratingRoot = document.getElementById("rating-root")!;
+    const recetteId = ratingRoot.dataset.recetteId!;
+    const starBtns = Array.from(ratingRoot.querySelectorAll<HTMLButtonElement>(".star-btn"));
+    const noteLabel = document.getElementById("note-label")!;
+
+    let userValeur = parseInt(ratingRoot.dataset.userValeur ?? "0");
+
+    function renderStars(hovered: number, selected: number) {
+        const active = hovered || selected;
+        starBtns.forEach((btn, i) => {
+            const star = btn.querySelector("span")!;
+            star.className = i < active ? "text-secondary" : "text-dark/20";
+        });
+    }
+
+    starBtns.forEach(btn => {
+        btn.addEventListener("mouseenter", () => renderStars(parseInt(btn.dataset.value!), userValeur));
+        btn.addEventListener("mouseleave", () => renderStars(0, userValeur));
+
+        btn.addEventListener("click", async () => {
+            const valeur = parseInt(btn.dataset.value!);
+            starBtns.forEach(b => (b.disabled = true));
+
+            const res = await fetch("/api/note-recette", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ recetteId, valeur }),
+            });
+
+            starBtns.forEach(b => (b.disabled = false));
+
+            if (res.ok) {
+                const { moyenne, total } = await res.json();
+                userValeur = valeur;
+                renderStars(0, userValeur);
+                noteLabel.textContent = `${moyenne}/5 (${total} vote${total > 1 ? "s" : ""})`;
+                ratingRoot.querySelector("p")!.textContent = "Votre note";
+            }
+        });
+    });
+
+    renderStars(0, userValeur);
 </script>

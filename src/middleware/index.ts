@@ -14,7 +14,7 @@ export const onRequest = defineMiddleware(
 
       try {
         locals.pb.authStore.isValid &&
-          (await locals.pb.collection("users").authRefresh());
+          (await locals.pb.collection("users").authRefresh({ requestKey: null }));
       } catch (_) {
         locals.pb.authStore.clear();
       }
