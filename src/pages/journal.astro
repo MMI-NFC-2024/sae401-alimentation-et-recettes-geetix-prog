@@ -25,7 +25,7 @@ const totaux = entries.reduce((acc: any, e: any) => {
     if (!a) return acc;
     const q = e.quantite / 100;
     acc.calories += a.calories * q;
-    acc. += a.proteines * q;
+    acc.proteines += a.proteines * q;
     acc.glucides += a.glucides * q;
     acc.lipides += a.lipides * q;
     return acc;
@@ -46,7 +46,7 @@ function circle(val: number, obj: number, color: string) {
 
 const cards = [
     { label: "Calories",  valeur: totaux.calories, obj:OBJECTIFS.calories, unite: "kca ", ...circle(totaux.calories, OBJECTIFS.calories,  "#CE2F7D") },
-    { label: "Protéines", valeur: totaux.proteines obj:OBJECTIFS.proteines unite: "g", ...circle(totaux.proteines, OBJECTIFS.proteines, "#00522D") },
+    { label: "Protéines", valeur: totaux.proteines, obj:OBJECTIFS.proteines, unite: "g", ...circle(totaux.proteines, OBJECTIFS.proteines, "#00522D") },
     { label: "Glucides",  valeur: totaux.glucides, obj:OBJECTIFS.glucides, unite: "g", ...circle(totaux.glucides, OBJECTIFS.glucides,  "#CE2F7D") },
     { label: "Lipides",   valeur: totaux.lipides, obj:OBJECTIFS.lipides, unite: "g", ...circle(totaux.lipides, OBJECTIFS.lipides,   "#00522D") },
 ];
