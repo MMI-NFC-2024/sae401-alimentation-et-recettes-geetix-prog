@@ -34,7 +34,11 @@ if (request.method === "POST") {
         const prenom = form.get("prenom") as string;
         const password = form.get("password") as string;
         const passwordConfirm = form.get("passwordConfirm") as string;
+        const objectif = form.get("objectif") as string;
 
+        if (!objectif) {
+            return redirect(`/?panel=register&registerError=Veuillez+choisir+un+objectif`);
+        }
         if (password.length > 0 && password.length< 8) {
             return redirect(`/?panel=register&registerError=Le+mot+de+passe+est+trop+court+(8+caracteres+min)`);
         }
@@ -46,7 +50,7 @@ if (request.method === "POST") {
             const username = `${prenom}.${nom}`.toLowerCase().replace(/\s+/g, "");
             const avatar = form.get("avatar") as File | null;
             await locals.pb.collection("users").create({
-                email, prenom, nom, password, passwordConfirm,
+                email, prenom, nom, password, passwordConfirm, objectif,
                 ...(avatar && avatar.size > 0 ? { avatar } : {}),
             });
             await locals.pb.collection("users").authWithPassword(email, password);
@@ -146,7 +150,7 @@ if (request.method === "POST") {
 
     <div
         id="register"
-        class={`bg-secondary h-4/5 rounded-t-4xl w-full fixed bottom-0 z-10 transition-transform duration-500 ease-out ${activePanel === "register" ? "" : "translate-y-full"}`}
+        class={`bg-secondary h-[95svh] rounded-t-4xl w-full fixed bottom-0 z-10 transition-transform duration-500 ease-out overflow-y-auto ${activePanel === "register" ? "" : "translate-y-full"}`}
     >
         <div class="flex flex-col items-center justify-center h-full px-6 py-8">
             <h2 class="font-modak uppercase text-tertiary text-5xl mb-8">Inscription</h2>
@@ -189,6 +193,19 @@ if (request.method === "POST") {
                         class="w-full px-4 py-2 rounded-full bg-tertiary text-dark border-2 border-tertiary focus:border-dark"
                         required
                     />
+                </div>
+                <div class="w-4/5">
+                    <select
+                        name="objectif"
+                        required
+                        class="w-full px-4 py-2 rounded-full bg-tertiary text-dark border-2 border-tertiary focus:border-dark cursor-pointer"
+                    >
+                        <option value="" disabled selected>Votre objectif</option>
+                        <option value="prendre de la masse">Prendre de la masse</option>
+                        <option value="perdre du poids">Perdre du poids</option>
+                        <option value="manger sain">Manger sain</option>
+                        <option value="booster son énergie">Booster son énergie</option>
+                    </select>
                 </div>
                 <div class="w-4/5 relative">
                     <input
