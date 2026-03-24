@@ -394,7 +394,6 @@ const cards = [
         });
     }
 
-    // ── Calendrier ──────────────────────────────────────────────
     const root = document.getElementById("journal-root") as HTMLElement;
     const calGrid = document.getElementById("cal-grid")!;
     const calTitle = document.getElementById("cal-title")!;
@@ -467,7 +466,6 @@ const cards = [
     });
 
     renderCalendar(calYear, calMonth);
-    // ─────────────────────────────────────────────────────────────
 
     async function recalculateTotals() {
         const today = (document.getElementById("journal-root") as HTMLElement).dataset.today!;

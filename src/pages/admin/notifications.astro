@@ -56,7 +56,6 @@ const OBJECTIFS = [
                 </h1>
             </div>
 
-            <!-- Formulaire de création -->
             <div class="bg-white rounded-2xl shadow-sm p-6">
                 <h2 class="font-modak text-xl text-secondary uppercase tracking-wide mb-5">Nouvelle notification</h2>
 
@@ -114,7 +113,6 @@ const OBJECTIFS = [
                 </form>
             </div>
 
-            <!-- Liste des notifications -->
             <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
                 <table class="w-full text-sm">
                     <thead class="bg-secondary/10 border-b border-secondary/20">
@@ -170,7 +168,6 @@ const OBJECTIFS = [
 </Layout>
 
 <script>
-    // Show/hide recette field based on type
     const typeSelect = document.getElementById("type") as HTMLSelectElement;
     const recetteField = document.getElementById("recette-field") as HTMLDivElement;
 
@@ -178,7 +175,6 @@ const OBJECTIFS = [
         recetteField.classList.toggle("hidden", typeSelect.value !== "recette");
     });
 
-    // Create notification
     const form = document.getElementById("create-form") as HTMLFormElement;
     form.addEventListener("submit", async (e) => {
         e.preventDefault();
@@ -210,7 +206,6 @@ const OBJECTIFS = [
         }
     });
 
-    // Delete notification
     document.querySelectorAll<HTMLButtonElement>(".delete-btn").forEach(btn => {
         btn.addEventListener("click", async () => {
             const id = btn.dataset.id!;
