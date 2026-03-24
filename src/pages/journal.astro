@@ -106,7 +106,7 @@ const cards = [
     class="min-h-screen bg-secondary flex flex-col lg:flex-row pt-30 md:pt-35 pb-50 gap-16 px-5 sm:px-7 md:px-10 lg:px-20 gap-10 lg:gap-8"
 >
 
-    <div class="flex flex-col gap-6 order-2 lg:order-1 lg:fixed lg:top-36 lg:left-20 lg:w-[calc(50%-6rem)]">
+    <div class="flex flex-col gap-6 order-2 lg:order-1 lg:sticky lg:top-36 lg:self-start lg:w-1/2">
         <h1 class="font-modak text-tertiary text-center md:text-start text-4xl sm:text-5xl uppercase">Journal alimentaire</h1>
 
         <div id="cards-container" class="flex flex-col gap-4">
@@ -134,7 +134,7 @@ const cards = [
         </div>
     </div>
 
-    <div class="flex flex-col gap-6 order-1 lg:order-2 lg:ml-[50%] lg:w-1/2">
+    <div class="flex flex-col gap-6 order-1 lg:order-2 lg:w-1/2">
         <h2 class="font-modak text-tertiary text-4xl text-center md:text-start sm:text-5xl uppercase">
             {isToday ? "Consommation du jour" : new Date(selectedDate + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}
         </h2>
