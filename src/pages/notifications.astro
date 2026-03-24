@@ -1,0 +1,116 @@
+---
+import Layout from "../layouts/Layout.astro";
+
+const { locals, redirect } = Astro;
+
+if (!locals.pb.authStore.isValid) return redirect("/");
+
+const user = locals.pb.authStore.record;
+const pbUrl = locals.pb.baseURL;
+
+let userObjectif = user.objectif ?? "";
+
+if (user.regime) {
+    try {
+        const regime = await locals.pb.collection("Regimes").getOne(user.regime, { requestKey: null });
+        if (regime.objectif) {
+            const map: Record<string, string> = {
+                perte: "perdre du poids",
+                prise: "prendre de la masse",
+                maintien: "manger sain",
+            };
+            userObjectif = map[regime.objectif] ?? userObjectif;
+        }
+    } catch {}
+}
+
+let notifications: any[] = [];
+try {
+    notifications = await locals.pb.collection("Notifications").getFullList({
+        filter: `objectif_cible = "" || objectif_cible = "${userObjectif}"`,
+        expand: "recette",
+        sort: "-created",
+        requestKey: null,
+    });
+} catch (e) {
+    console.error("[Notifications]", e);
+}
+---
+
+<Layout showHeader titrePage="Notifications">
+    <div class="min-h-screen bg-secondary pt-28 md:pt-32 pb-32 px-5 sm:px-7 md:px-10 lg:px-20">
+        <h1 class="font-modak text-tertiary text-4xl sm:text-5xl uppercase mb-8">Notifications</h1>
+
+        {notifications.length === 0 ? (
+            <div class="flex flex-col items-center justify-center py-24 text-tertiary/40">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-16 h-16 mb-4">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
+                </svg>
+                <p class="font-montserrat text-lg">Aucune notification pour le moment</p>
+            </div>
+        ) : (
+            <div class="flex flex-col gap-4 max-w-2xl" id="notif-list">
+                {notifications.map((n) => {
+                    const recette = n.expand?.recette;
+                    const img = recette?.image
+                        ? `${pbUrl}/api/files/${recette.collectionId}/${recette.id}/${recette.image}`
+                        : null;
+                    const date = new Date((n.created ?? "").replace(" ", "T"))
+                        .toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
+
+                    return (
+                        <div class="notif-card bg-white rounded-2xl p-5 shadow-sm flex gap-4 items-start" data-id={n.id} data-created={n.created}>
+                            {n.type === "recette" ? (
+                                img
+                                    ? <img src={img} alt={recette?.titre ?? ""} class="w-16 h-16 rounded-xl object-cover shrink-0" />
+                                    : <div class="w-16 h-16 rounded-xl bg-secondary shrink-0 flex items-center justify-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-7 h-7 text-tertiary/50">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8.25v-1.5m0 1.5c-1.355 0-2.697.056-4.024.166C6.845 8.51 6 9.473 6 10.608v2.513m6-4.871c1.355 0 2.697.056 4.024.166C17.155 8.51 18 9.473 18 10.608v2.513M15 8.25v-1.5m-6 1.5v-1.5m12 9.75-1.5.75a3.354 3.354 0 0 1-3 0 3.354 3.354 0 0 0-3 0 3.354 3.354 0 0 1-3 0 3.354 3.354 0 0 0-3 0 3.354 3.354 0 0 1-1.5-.75M3 12h18m-18 3.75h18" />
+                                        </svg>
+                                      </div>
+                            ) : (
+                                <div class="w-12 h-12 rounded-full shrink-0 flex items-center justify-center mt-0.5" style="background-color: #CE2F7D20;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#CE2F7D" class="w-6 h-6">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                    </svg>
+                                </div>
+                            )}
+
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-start justify-between gap-2">
+                                    <p class="font-montserrat font-bold text-dark">{n.titre}</p>
+                                    <span class="text-xs text-dark/40 shrink-0 font-montserrat whitespace-nowrap">{date}</span>
+                                </div>
+                                {n.message && (
+                                    <p class="text-sm text-dark/70 font-montserrat mt-1 leading-relaxed">{n.message}</p>
+                                )}
+                                {n.type === "recette" && recette && (
+                                    <a
+                                        href={`/recettes/${recette.id}`}
+                                        class="inline-flex items-center gap-1 mt-2 text-sm font-semibold font-montserrat transition"
+                                        style="color: #00522D;"
+                                    >
+                                        Voir la recette
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
+                                            <path fill-rule="evenodd" d="M6.22 4.22a.75.75 0 0 1 1.06 0l3.25 3.25a.75.75 0 0 1 0 1.06l-3.25 3.25a.75.75 0 0 1-1.06-1.06L8.94 8 6.22 5.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
+                                        </svg>
+                                    </a>
+                                )}
+                                {n.objectif_cible && (
+                                    <span class="inline-block mt-2 text-xs  font-montserrat bg-secondary text-tertiary px-2 py-0.5 rounded-full capitalize">
+                                        {n.objectif_cible}
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+        )}
+    </div>
+</Layout>
+
+<script>
+    localStorage.setItem("notifs_last_seen", new Date().toISOString());
+    document.querySelectorAll<SVGCircleElement>(".notif-badge").forEach(el => el.classList.add("hidden"));
+</script>

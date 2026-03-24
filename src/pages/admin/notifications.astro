@@ -1,0 +1,235 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { createAdminPb } from "../../utils/pb";
+import { loadAdminAuth } from "../../utils/adminAuth";
+
+const { request, redirect } = Astro;
+
+const adminPb = loadAdminAuth(request.headers.get("cookie"));
+if (!adminPb.authStore.isValid) return redirect("/admin/login");
+
+const pbAdmin = await createAdminPb();
+
+const [notifications, recettes] = await Promise.all([
+    pbAdmin.collection("Notifications").getFullList({
+        sort: "-created",
+        expand: "recette",
+        requestKey: null,
+    }),
+    pbAdmin.collection("Recettes").getFullList({
+        sort: "titre",
+        fields: "id,titre",
+        requestKey: null,
+    }),
+]);
+
+const OBJECTIFS = [
+    { value: "", label: "Tous les utilisateurs" },
+    { value: "perdre du poids", label: "Perdre du poids" },
+    { value: "prendre de la masse", label: "Prendre de la masse" },
+    { value: "manger sain", label: "Manger sain" },
+    { value: "booster son énergie", label: "Booster son énergie" },
+];
+---
+
+<Layout titrePage="Admin - Notifications">
+    <div class="min-h-screen bg-gray-100 font-montserrat">
+        <nav class="bg-gray-900 text-white px-6 py-4 flex items-center gap-6 text-sm font-bold">
+            <span class="font-modak text-xl text-tertiary tracking-wide">NŪRA ADMIN</span>
+            <a href="/admin" class="text-white/60 hover:text-white transition">Dashboard</a>
+            <a href="/admin/recettes" class="text-white/60 hover:text-white transition">Recettes</a>
+            <a href="/admin/aliments" class="text-white/60 hover:text-white transition">Aliments</a>
+            <a href="/admin/utilisateurs" class="text-white/60 hover:text-white transition">Utilisateurs</a>
+            <a href="/admin/notifications" class="text-white hover:text-tertiary transition">Notifications</a>
+            <div class="ml-auto flex items-center gap-4">
+                <a href="/accueil" class="text-white/60 hover:text-white transition text-sm">← Retour au site</a>
+                <form method="POST" action="/apis/admin-logout">
+                    <button type="submit" class="text-red-400 hover:text-red-300 text-sm font-semibold transition cursor-pointer">Déconnexion</button>
+                </form>
+            </div>
+        </nav>
+
+        <main class="px-6 py-10 max-w-6xl mx-auto flex flex-col gap-8">
+            <div class="flex items-center justify-between">
+                <h1 class="text-2xl font-bold text-gray-800">Notifications <span class="text-gray-400 text-lg font-normal">({notifications.length})</span></h1>
+            </div>
+
+            <!-- Formulaire de création -->
+            <div class="bg-white rounded-2xl shadow-sm p-6">
+                <h2 class="font-bold text-gray-700 mb-5 text-lg">Nouvelle notification</h2>
+
+                <form id="create-form" class="flex flex-col gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="flex flex-col gap-1">
+                            <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Type</label>
+                            <select id="type" name="type" class="border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300">
+                                <option value="message">Message</option>
+                                <option value="recette">Recette</option>
+                            </select>
+                        </div>
+                        <div class="flex flex-col gap-1">
+                            <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Cibler l'objectif</label>
+                            <select id="objectif_cible" name="objectif_cible" class="border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300">
+                                {OBJECTIFS.map(o => <option value={o.value}>{o.label}</option>)}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col gap-1">
+                        <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Titre</label>
+                        <input
+                            id="titre" name="titre" type="text" required
+                            placeholder="Titre de la notification"
+                            class="border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
+                        />
+                    </div>
+
+                    <div class="flex flex-col gap-1">
+                        <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Message <span class="normal-case font-normal text-gray-400">(optionnel)</span></label>
+                        <textarea
+                            id="message" name="message" rows="3"
+                            placeholder="Contenu du message..."
+                            class="border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300 resize-none"
+                        ></textarea>
+                    </div>
+
+                    <div id="recette-field" class="flex flex-col gap-1 hidden">
+                        <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Recette liée</label>
+                        <select id="recette" name="recette" class="border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300">
+                            <option value="">— Choisir une recette —</option>
+                            {recettes.map((r: any) => <option value={r.id}>{r.titre}</option>)}
+                        </select>
+                    </div>
+
+                    <div class="flex justify-end">
+                        <button
+                            type="submit"
+                            class="bg-gray-900 text-white text-sm px-6 py-2.5 rounded-xl hover:bg-gray-700 transition font-semibold"
+                        >
+                            Envoyer la notification
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Liste des notifications -->
+            <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-50 border-b border-gray-200">
+                        <tr>
+                            <th class="text-left px-6 py-4 text-gray-500 font-semibold">Notification</th>
+                            <th class="text-left px-6 py-4 text-gray-500 font-semibold hidden sm:table-cell">Type</th>
+                            <th class="text-left px-6 py-4 text-gray-500 font-semibold hidden md:table-cell">Objectif ciblé</th>
+                            <th class="text-left px-6 py-4 text-gray-500 font-semibold hidden lg:table-cell">Date</th>
+                            <th class="px-6 py-4"></th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100" id="notif-table-body">
+                        {notifications.map((n: any) => {
+                            const recette = n.expand?.recette;
+                            const date = new Date((n.created ?? "").replace(" ", "T")).toLocaleDateString("fr-FR");
+                            return (
+                                <tr class="hover:bg-gray-50 transition">
+                                    <td class="px-6 py-4">
+                                        <p class="font-medium text-gray-800">{n.titre}</p>
+                                        {n.message && <p class="text-xs text-gray-400 mt-0.5 truncate max-w-xs">{n.message}</p>}
+                                        {recette && <p class="text-xs text-blue-500 mt-0.5">↳ {recette.titre}</p>}
+                                    </td>
+                                    <td class="px-6 py-4 hidden sm:table-cell">
+                                        <span class={`capitalize text-xs px-2 py-1 rounded-full font-semibold ${n.type === "recette" ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700"}`}>
+                                            {n.type}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 hidden md:table-cell">
+                                        <span class="text-xs text-gray-500 capitalize">{n.objectif_cible || "Tous"}</span>
+                                    </td>
+                                    <td class="px-6 py-4 text-gray-400 hidden lg:table-cell text-xs">{date}</td>
+                                    <td class="px-6 py-4 text-right">
+                                        <button
+                                            class="delete-btn text-red-400 hover:text-red-600 text-xs font-semibold transition cursor-pointer"
+                                            data-id={n.id}
+                                            data-collection="Notifications"
+                                            data-nom={n.titre}
+                                        >
+                                            Supprimer
+                                        </button>
+                                    </td>
+                                </tr>
+                            );
+                        })}
+                    </tbody>
+                </table>
+                {notifications.length === 0 && (
+                    <p class="text-center text-gray-400 py-10">Aucune notification</p>
+                )}
+            </div>
+        </main>
+    </div>
+</Layout>
+
+<script>
+    // Show/hide recette field based on type
+    const typeSelect = document.getElementById("type") as HTMLSelectElement;
+    const recetteField = document.getElementById("recette-field") as HTMLDivElement;
+
+    typeSelect.addEventListener("change", () => {
+        recetteField.classList.toggle("hidden", typeSelect.value !== "recette");
+    });
+
+    // Create notification
+    const form = document.getElementById("create-form") as HTMLFormElement;
+    form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const btn = form.querySelector("button[type=submit]") as HTMLButtonElement;
+        btn.textContent = "Envoi...";
+        btn.disabled = true;
+
+        const data = {
+            titre: (form.querySelector("#titre") as HTMLInputElement).value.trim(),
+            message: (form.querySelector("#message") as HTMLTextAreaElement).value.trim(),
+            type: typeSelect.value,
+            recette: typeSelect.value === "recette"
+                ? (form.querySelector("#recette") as HTMLSelectElement).value
+                : "",
+            objectif_cible: (form.querySelector("#objectif_cible") as HTMLSelectElement).value,
+        };
+
+        const res = await fetch("/apis/admin-notif-create", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+        });
+
+        if (res.ok) {
+            window.location.reload();
+        } else {
+            btn.textContent = "Erreur";
+            btn.disabled = false;
+        }
+    });
+
+    // Delete notification
+    document.querySelectorAll<HTMLButtonElement>(".delete-btn").forEach(btn => {
+        btn.addEventListener("click", async () => {
+            const id = btn.dataset.id!;
+            const nom = btn.dataset.nom ?? "cette notification";
+            if (!confirm(`Supprimer "${nom}" définitivement ?`)) return;
+
+            btn.textContent = "...";
+            btn.disabled = true;
+
+            const res = await fetch("/apis/admin-delete", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ collection: "Notifications", id }),
+            });
+
+            if (res.ok) {
+                btn.closest("tr")?.remove();
+            } else {
+                btn.textContent = "Erreur";
+                btn.disabled = false;
+            }
+        });
+    });
+</script>
