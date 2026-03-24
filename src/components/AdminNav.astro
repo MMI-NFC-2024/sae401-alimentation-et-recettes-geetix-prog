@@ -1,0 +1,72 @@
+---
+interface Props {
+    currentPage?: string;
+}
+
+const { currentPage = "" } = Astro.props;
+
+const links = [
+    { href: "/admin", label: "Dashboard" },
+    { href: "/admin/recettes", label: "Recettes" },
+    { href: "/admin/aliments", label: "Aliments" },
+    { href: "/admin/utilisateurs", label: "Utilisateurs" },
+    { href: "/admin/notifications", label: "Notifications" },
+];
+---
+
+<nav class="bg-secondary text-white px-6 py-4 flex items-center gap-6 text-sm font-bold">
+    <span class="font-modak text-xl text-tertiary tracking-wide">NŪRA ADMIN</span>
+
+    <!-- Liens desktop -->
+    <div class="hidden md:flex items-center gap-6">
+        {links.map((l) => (
+            <a
+                href={l.href}
+                class={currentPage === l.href ? "text-tertiary" : "text-white/60 hover:text-tertiary transition"}
+            >
+                {l.label}
+            </a>
+        ))}
+    </div>
+
+    <div class="ml-auto flex items-center gap-4">
+        <a href="/accueil" class="hidden md:block text-white/60 hover:text-white transition text-sm">← Retour au site</a>
+        <form method="POST" action="/apis/admin-logout" class="hidden md:block">
+            <button type="submit" class="text-primary hover:text-primary/70 text-sm font-semibold transition cursor-pointer">Déconnexion</button>
+        </form>
+
+        <!-- Burger mobile -->
+        <button id="admin-burger" class="md:hidden flex flex-col gap-1.5 p-1 cursor-pointer" aria-label="Menu">
+            <span class="block w-6 h-0.5 bg-tertiary transition-all"></span>
+            <span class="block w-6 h-0.5 bg-tertiary transition-all"></span>
+            <span class="block w-6 h-0.5 bg-tertiary transition-all"></span>
+        </button>
+    </div>
+</nav>
+
+<!-- Menu mobile -->
+<div id="admin-mobile-menu" class="md:hidden hidden bg-secondary border-t border-white/10 px-6 py-4 flex flex-col gap-4 text-sm font-bold">
+    {links.map((l) => (
+        <a
+            href={l.href}
+            class={currentPage === l.href ? "text-tertiary" : "text-white/60 hover:text-tertiary transition"}
+        >
+            {l.label}
+        </a>
+    ))}
+    <div class="border-t border-white/10 pt-4 flex flex-col gap-3">
+        <a href="/accueil" class="text-white/60 hover:text-white transition">← Retour au site</a>
+        <form method="POST" action="/apis/admin-logout">
+            <button type="submit" class="text-primary hover:text-primary/70 font-semibold transition cursor-pointer">Déconnexion</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    const burger = document.getElementById("admin-burger")!;
+    const menu = document.getElementById("admin-mobile-menu")!;
+
+    burger.addEventListener("click", () => {
+        menu.classList.toggle("hidden");
+    });
+</script>

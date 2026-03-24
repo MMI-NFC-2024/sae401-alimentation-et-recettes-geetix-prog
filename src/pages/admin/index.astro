@@ -1,5 +1,6 @@
 ---
 import Layout from "../../layouts/Layout.astro";
+import AdminNav from "../../components/AdminNav.astro";
 import { createAdminPb } from "../../utils/pb";
 import { loadAdminAuth } from "../../utils/adminAuth";
 
@@ -39,20 +40,7 @@ const recentUsers = await pbAdmin.collection("users").getList(1, 5, {
 
 <Layout titrePage="Admin">
     <div class="min-h-screen bg-tertiary/20 font-montserrat">
-        <nav class="bg-secondary text-white px-6 py-4 flex items-center gap-6 text-sm font-bold">
-            <span class="font-modak text-xl text-tertiary tracking-wide">NŪRA ADMIN</span>
-            <a href="/admin" class="text-tertiary">Dashboard</a>
-            <a href="/admin/recettes" class="text-white/60 hover:text-tertiary transition">Recettes</a>
-            <a href="/admin/aliments" class="text-white/60 hover:text-tertiary transition">Aliments</a>
-            <a href="/admin/utilisateurs" class="text-white/60 hover:text-tertiary transition">Utilisateurs</a>
-            <a href="/admin/notifications" class="text-white/60 hover:text-tertiary transition">Notifications</a>
-            <div class="ml-auto flex items-center gap-4">
-                <a href="/accueil" class="text-white/60 hover:text-white transition text-sm">← Retour au site</a>
-                <form method="POST" action="/apis/admin-logout">
-                    <button type="submit" class="text-primary hover:text-primary/70 text-sm font-semibold transition cursor-pointer">Déconnexion</button>
-                </form>
-            </div>
-        </nav>
+        <AdminNav currentPage="/admin" />
 
         <main class="px-6 py-10 max-w-6xl mx-auto flex flex-col gap-10">
             <h1 class="font-modak text-3xl text-secondary uppercase tracking-wide">Dashboard</h1>
