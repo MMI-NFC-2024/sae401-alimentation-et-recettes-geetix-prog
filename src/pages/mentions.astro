@@ -18,14 +18,35 @@ if (!locals.pb.authStore.isValid) return redirect("/");
                         <p class="font-bold text-secondary uppercase text-sm">Éditeur du site NŪRA</p>
                         <ul class="flex flex-col gap-1 text-sm text-dark/80 pl-4">
                             <li>Prénom et nom : Mathis Guellati</li>
-                            <li>Adresse : 36 place des combes saint germain - Valentigney 25700</li>
+                            <li>Qualité : Particulier, projet réalisé dans le cadre d'une formation</li>
+                            <li>Adresse : 36 place des combes saint germain - Valentigney 25700 (France)</li>
                             <li>Email : <a href="mailto:mathis.guellati@gmail.com" class="text-primary underline">mathis.guellati@gmail.com</a></li>
                             <li>Téléphone : 07 60 31 37 55</li>
                         </ul>
                     </div>
                     <div class="flex flex-col gap-2">
+                        <p class="font-bold text-secondary uppercase text-sm">Directeur de la publication</p>
+                        <p class="text-sm text-dark/80">Mathis Guellati, <a href="mailto:mathis.guellati@gmail.com" class="text-primary underline">mathis.guellati@gmail.com</a></p>
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <p class="font-bold text-secondary uppercase text-sm">Hébergeur</p>
+                        <ul class="flex flex-col gap-1 text-sm text-dark/80 pl-4">
+                            <li>Raison sociale : PulseHeberg</li>
+                            <li>Adresse : 8 rue de la Terrasse - 74000 Annecy (France)</li>
+                            <li>Site : <span class="text-primary">www.pulseheberg.com</span></li>
+                        </ul>
+                    </div>
+                    <div class="flex flex-col gap-2">
                         <p class="font-bold text-secondary uppercase text-sm">Propriété intellectuelle</p>
-                        <p class="text-sm text-dark/80">L'ensemble des contenus présents sur NŪRA (textes, recettes, fiches aliments, visuels, logo) est la propriété exclusive de l'éditeur du site. Toute reproduction, même partielle, est interdite sans autorisation préalable.</p>
+                        <p class="text-sm text-dark/80">L'ensemble des contenus présents sur NŪRA (textes, recettes, fiches aliments, visuels, logo) est la propriété exclusive de l'éditeur du site. Toute reproduction, même partielle, est interdite sans autorisation préalable écrite de l'éditeur.</p>
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <p class="font-bold text-secondary uppercase text-sm">Liens externes</p>
+                        <p class="text-sm text-dark/80">La page "Accompagnement" propose des liens vers des sites tiers (Livi, Coach-Sportif.fr, etc.). NŪRA n'est pas responsable du contenu de ces sites et ne perçoit pas de rémunération pour ces mises en relation à ce jour. Ces liens sont fournis à titre informatif uniquement.</p>
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <p class="font-bold text-secondary uppercase text-sm">Limitation de responsabilité</p>
+                        <p class="text-sm text-dark/80">Les informations nutritionnelles présentes sur NŪRA sont fournies à titre indicatif et ne constituent pas un avis médical. Consultez un professionnel de santé avant tout changement de régime alimentaire.</p>
                     </div>
                 </div>
             </section>
@@ -52,7 +73,6 @@ if (!locals.pb.authStore.isValid) return redirect("/");
                             <li>Personnaliser le contenu et les recommandations nutritionnelles</li>
                             <li>Assurer le fonctionnement du compte utilisateur</li>
                             <li>Améliorer les performances et l'expérience du site</li>
-                            <li>Afficher des contenus sponsorisés adaptés au profil de l'utilisateur</li>
                         </ul>
                     </div>
 
@@ -96,31 +116,24 @@ if (!locals.pb.authStore.isValid) return redirect("/");
                         <div class="flex flex-col gap-2">
                             <div class="bg-secondary/10 rounded-2xl px-4 py-3 flex flex-col gap-1">
                                 <p class="font-bold text-sm text-dark">Cookies essentiels</p>
-                                <p class="text-sm text-dark/70">Connexion, session utilisateur, préférences. Durée : session.</p>
-                            </div>
-                            <div class="bg-secondary/10 rounded-2xl px-4 py-3 flex flex-col gap-1">
-                                <p class="font-bold text-sm text-dark">Cookies analytiques</p>
-                                <p class="text-sm text-dark/70">Mesure d'audience, pages consultées. Durée : 13 mois.</p>
+                                <p class="text-sm text-dark/70">Gestion de la session d'authentification (PocketBase). Nécessaires au fonctionnement du site. Durée : session.</p>
                             </div>
                             <div class="bg-secondary/10 rounded-2xl px-4 py-3 flex flex-col gap-1">
                                 <p class="font-bold text-sm text-dark">Cookies de personnalisation</p>
-                                <p class="text-sm text-dark/70">Profil nutritionnel, recommandations. Durée : 12 mois.</p>
-                            </div>
-                            <div class="bg-secondary/10 rounded-2xl px-4 py-3 flex flex-col gap-1">
-                                <p class="font-bold text-sm text-dark">Cookies publicitaires</p>
-                                <p class="text-sm text-dark/70">Affichage de contenus sponsorisés ciblés. Durée : 6 mois.</p>
+                                <p class="text-sm text-dark/70">Mémorisation de l'objectif nutritionnel et des préférences utilisateur. Durée : 12 mois.</p>
                             </div>
                         </div>
+                        <p class="text-sm text-dark/60 italic">NŪRA n'utilise pas de cookies publicitaires ni de cookies de mesure d'audience tiers à ce jour.</p>
                     </div>
 
                     <div class="flex flex-col gap-2">
                         <p class="font-bold text-secondary uppercase text-sm">Consentement</p>
-                        <p class="text-sm text-dark/80">Lors de votre première visite sur NŪRA, un bandeau vous informe de l'utilisation des cookies et vous demande votre consentement. Seuls les cookies essentiels sont déposés sans votre accord. Vous pouvez à tout moment modifier vos préférences via le lien "Gérer mes cookies" en bas de chaque page.</p>
+                        <p class="text-sm text-dark/80">Les cookies essentiels sont déposés automatiquement lors de la connexion, car nécessaires au fonctionnement du service. Les cookies de personnalisation sont déposés après acceptation des conditions lors de l'inscription.</p>
                     </div>
 
                     <div class="flex flex-col gap-2">
                         <p class="font-bold text-secondary uppercase text-sm">Comment refuser les cookies ?</p>
-                        <p class="text-sm text-dark/80">Vous pouvez configurer votre navigateur pour refuser les cookies. Cette action peut toutefois limiter certaines fonctionnalités du site, notamment la personnalisation du contenu.</p>
+                        <p class="text-sm text-dark/80">Vous pouvez configurer votre navigateur pour bloquer ou supprimer les cookies. Cette action entraînera la déconnexion automatique et empêchera l'accès aux fonctionnalités du site nécessitant une authentification.</p>
                     </div>
                 </div>
             </section>
