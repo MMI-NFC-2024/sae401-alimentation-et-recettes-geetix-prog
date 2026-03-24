@@ -12,11 +12,12 @@ const avatarUrl = user?.avatar
 interface Props {
     allHeader?: boolean;
     titrePage?: string;
+    headerColor?: string;
 }
 
-const { allHeader = false, titrePage } = Astro.props;
+const { allHeader = false, titrePage, headerColor } = Astro.props;
 
-const color = (titrePage === "Recettes" || titrePage === "Mentions" || titrePage === "Profil") ? "secondary" : "tertiary";
+const color = headerColor ?? ((titrePage === "Recettes" || titrePage === "Mentions" || titrePage === "Profil") ? "secondary" : "tertiary");
 const colorMobile = (titrePage === "Recettes" || titrePage === "Mentions" || titrePage === "Profil" || titrePage === "journal") ? "dark" : "white";
 ---
 

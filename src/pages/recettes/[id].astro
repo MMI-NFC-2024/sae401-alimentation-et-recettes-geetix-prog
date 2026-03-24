@@ -88,6 +88,7 @@ const pbUrl = locals.pb.baseURL;
 <Layout
     showHeader
     titrePage={recette.titre}
+    headerColor="secondary"
     description={recette.description ?? `Recette ${recette.titre} — ${recette.temps_preparation ?? "?"} min, niveau ${recette.difficulte ?? "?"}.`}
     ogImage={imageUrl ?? undefined}
     ogType="article"

@@ -11,6 +11,7 @@ interface Props {
     description?: string;
     ogImage?: string;
     ogType?: string;
+    headerColor?: string;
 }
 
 const {
@@ -19,6 +20,7 @@ const {
     description = "NŪRA, votre nutritionniste du quotidien. Recettes saines, journal alimentaire et régimes personnalisés selon vos objectifs.",
     ogImage = "/og.png",
     ogType = "website",
+    headerColor,
 } = Astro.props;
 
 const siteUrl = "https://sae401dev.mathis-guellati.fr";
@@ -63,7 +65,7 @@ const fullTitle = titrePage ? `NŪRA - ${titrePage}` : "NŪRA - Votre nutritionn
 		})} />
 	</head>
 	<body class="pb-16 md:pb-0">
-		{showHeader && <Header titrePage={titrePage} />}
+		{showHeader && <Header titrePage={titrePage} headerColor={headerColor} />}
 		<slot />
 		{showHeader && <ScrollToTop />}
 		{showHeader && <BottomNav currentPage={`/${titrePage?.toLowerCase()}`} />}
