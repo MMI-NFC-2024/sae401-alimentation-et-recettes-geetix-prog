@@ -6,10 +6,30 @@ export const GET: APIRoute = async ({ locals, request }) => {
     }
 
     const url = new URL(request.url);
+    const userId = locals.pb.authStore.record.id;
+
+    const month = url.searchParams.get("month");
+    if (month) {
+        const [y, m] = month.split("-").map(Number);
+        const monthStart = `${y}-${String(m).padStart(2, "0")}-01 00:00:00`;
+        const nextMonth = m === 12
+            ? `${y + 1}-01-01 00:00:00`
+            : `${y}-${String(m + 1).padStart(2, "0")}-01 00:00:00`;
+
+        const entries = await locals.pb.collection("Journal").getFullList({
+            filter: `user = "${userId}" && date >= "${monthStart}" && date < "${nextMonth}"`,
+            fields: "date",
+            requestKey: null,
+        });
+
+        const days = [...new Set(entries.map((e: any) => (e.date as string).split(" ")[0]))];
+        return new Response(JSON.stringify({ days }), { status: 200 });
+    }
+
     const today = url.searchParams.get("today") ?? new Date().toISOString().split("T")[0];
 
     const entries = await locals.pb.collection("Journal").getFullList({
-        filter: `user = "${locals.pb.authStore.record.id}" && date >= "${today} 00:00:00" && date <= "${today} 23:59:59"`,
+        filter: `user = "${userId}" && date >= "${today} 00:00:00" && date <= "${today} 23:59:59"`,
         expand: "aliment",
         sort: "-date",
         requestKey: null,

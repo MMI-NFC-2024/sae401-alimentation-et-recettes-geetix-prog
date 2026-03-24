@@ -2,7 +2,7 @@
 import Layout from "../layouts/Layout.astro";
 import Loupe from "../assets/icons/iconLoupe.svg?url";
 
-const { locals, redirect } = Astro;
+const { locals, redirect, url } = Astro;
 
 if (!locals.pb.authStore.isValid) return redirect("/");
 
@@ -10,13 +10,30 @@ const user = locals.pb.authStore.record;
 const pbUrl = locals.pb.baseURL;
 
 const today = new Date().toISOString().split("T")[0];
+const selectedDate = url.searchParams.get("date") ?? today;
+const isToday = selectedDate === today;
 
-const entries = await locals.pb.collection("Journal").getFullList({
-    filter: `user = "${user.id}" && date >= "${today} 00:00:00" && date <= "${today} 23:59:59"`,
-    expand: "aliment",
-    sort: "-date",
-    requestKey: null,
-});
+const [selYear, selMonth] = selectedDate.split("-").map(Number);
+const monthStart = `${selYear}-${String(selMonth).padStart(2, "0")}-01 00:00:00`;
+const nextMonthDate = selMonth === 12
+    ? `${selYear + 1}-01-01 00:00:00`
+    : `${selYear}-${String(selMonth + 1).padStart(2, "0")}-01 00:00:00`;
+
+const [entries, monthJournalEntries] = await Promise.all([
+    locals.pb.collection("Journal").getFullList({
+        filter: `user = "${user.id}" && date >= "${selectedDate} 00:00:00" && date <= "${selectedDate} 23:59:59"`,
+        expand: "aliment",
+        sort: "-date",
+        requestKey: null,
+    }),
+    locals.pb.collection("Journal").getFullList({
+        filter: `user = "${user.id}" && date >= "${monthStart}" && date < "${nextMonthDate}"`,
+        fields: "date",
+        requestKey: null,
+    }),
+]);
+
+const daysWithEntries = [...new Set(monthJournalEntries.map((e: any) => (e.date as string).split(" ")[0]))];
 
 const objectifsParRegime: Record<string, { calories: number; proteines: number; glucides: number; lipides: number }> = {
     perte:    { calories: 1500, proteines: 130, glucides: 150, lipides: 55 },
@@ -69,7 +86,7 @@ function circle(val: number, obj: number, color: string) {
 }
 
 const cards = [
-    { label: "Calories",  valeur: totaux.calories, obj:OBJECTIFS.calories, unite: "kca ", ...circle(totaux.calories, OBJECTIFS.calories,  "#CE2F7D") },
+    { label: "Calories",  valeur: totaux.calories, obj:OBJECTIFS.calories, unite: "kcal ", ...circle(totaux.calories, OBJECTIFS.calories,  "#CE2F7D") },
     { label: "Protéines", valeur: totaux.proteines, obj:OBJECTIFS.proteines, unite: "g", ...circle(totaux.proteines, OBJECTIFS.proteines, "#00522D") },
     { label: "Glucides",  valeur: totaux.glucides, obj:OBJECTIFS.glucides, unite: "g", ...circle(totaux.glucides, OBJECTIFS.glucides,  "#CE2F7D") },
     { label: "Lipides",   valeur: totaux.lipides, obj:OBJECTIFS.lipides, unite: "g", ...circle(totaux.lipides, OBJECTIFS.lipides,   "#00522D") },
@@ -81,12 +98,15 @@ const cards = [
     id="journal-root"
     data-pb-url={pbUrl}
     data-user-id={user.id}
-    data-today={today}
+    data-today={selectedDate}
     data-objectifs={JSON.stringify(OBJECTIFS)}
+    data-days={JSON.stringify(daysWithEntries)}
+    data-sel-year={selYear}
+    data-sel-month={selMonth}
     class="min-h-screen bg-secondary flex flex-col lg:flex-row pt-30 md:pt-35 pb-50 gap-16 px-5 sm:px-7 md:px-10 lg:px-20 gap-10 lg:gap-8"
 >
 
-    <div class="flex flex-col gap-6 lg:w-1/2 order-2 lg:order-1">
+    <div class="flex flex-col gap-6 order-2 lg:order-1 lg:fixed lg:top-36 lg:left-20 lg:w-[calc(50%-6rem)]">
         <h1 class="font-modak text-tertiary text-center md:text-start text-4xl sm:text-5xl uppercase">Journal alimentaire</h1>
 
         <div id="cards-container" class="flex flex-col gap-4">
@@ -114,8 +134,24 @@ const cards = [
         </div>
     </div>
 
-    <div class="flex flex-col gap-6 lg:w-1/2 order-1 lg:order-2">
-        <h2 class="font-modak text-tertiary text-4xl text-center md:text-start sm:text-5xl uppercase">Consommation du jour</h2>
+    <div class="flex flex-col gap-6 order-1 lg:order-2 lg:ml-[50%] lg:w-1/2">
+        <h2 class="font-modak text-tertiary text-4xl text-center md:text-start sm:text-5xl uppercase">
+            {isToday ? "Consommation du jour" : new Date(selectedDate + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}
+        </h2>
+
+        <div id="calendar" class="bg-tertiary rounded-3xl p-4 flex flex-col gap-3">
+            <div class="flex items-center justify-between">
+                <button id="cal-prev" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-dark/10 transition cursor-pointer font-bold text-dark">‹</button>
+                <span id="cal-title" class="font-montserrat font-bold text-dark text-sm uppercase tracking-wide"></span>
+                <button id="cal-next" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-dark/10 transition cursor-pointer font-bold text-dark">›</button>
+            </div>
+            <div class="grid grid-cols-7 gap-1 text-center">
+                {["L","M","M","J","V","S","D"].map(d => (
+                    <span class="font-montserrat text-xs text-dark/40 font-semibold py-1">{d}</span>
+                ))}
+            </div>
+            <div id="cal-grid" class="grid grid-cols-7 gap-1 text-center"></div>
+        </div>
 
         <div class="relative">
             <input
@@ -130,7 +166,6 @@ const cards = [
                 <ul id="search-list" class="flex flex-col divide-y divide-dark/10"></ul>
             </div>
         </div>
-
         <div id="quantite-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center">
             <div class="absolute inset-0 bg-black/50" id="modal-overlay"></div>
             <div class="relative bg-tertiary rounded-3xl p-8 flex flex-col gap-5 w-80 z-10">
@@ -358,6 +393,81 @@ const cards = [
             svgText.textContent = `${p}%`;
         });
     }
+
+    // ── Calendrier ──────────────────────────────────────────────
+    const root = document.getElementById("journal-root") as HTMLElement;
+    const calGrid = document.getElementById("cal-grid")!;
+    const calTitle = document.getElementById("cal-title")!;
+    const calPrev = document.getElementById("cal-prev")!;
+    const calNext = document.getElementById("cal-next")!;
+
+    const selectedDateStr = root.dataset.today!;
+    let daysWithEntries: string[] = JSON.parse(root.dataset.days ?? "[]");
+    let calYear = parseInt(root.dataset.selYear!);
+    let calMonth = parseInt(root.dataset.selMonth!);
+
+    const MOIS = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
+
+    async function fetchDaysForMonth(year: number, month: number) {
+        const res = await fetch(`/apis/journal-today?month=${year}-${String(month).padStart(2, "0")}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.days) daysWithEntries = data.days;
+    }
+
+    function renderCalendar(year: number, month: number) {
+        calTitle.textContent = `${MOIS[month - 1]} ${year}`;
+        calGrid.innerHTML = "";
+
+        const firstDay = new Date(year, month - 1, 1).getDay();
+        const offset = (firstDay + 6) % 7;
+        const daysInMonth = new Date(year, month, 0).getDate();
+        const today = new Date().toISOString().split("T")[0];
+
+        for (let i = 0; i < offset; i++) {
+            calGrid.appendChild(document.createElement("div"));
+        }
+
+        for (let d = 1; d <= daysInMonth; d++) {
+            const dateStr = `${year}-${String(month).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+            const btn = document.createElement("button");
+            btn.textContent = String(d);
+            btn.className = "w-8 h-8 mx-auto rounded-full text-sm font-montserrat transition cursor-pointer ";
+
+            if (dateStr === selectedDateStr) {
+                btn.className += "bg-primary text-white font-bold";
+            } else if (dateStr === today) {
+                btn.className += "border-2 border-primary text-dark font-bold hover:bg-primary/10";
+            } else if (daysWithEntries.includes(dateStr)) {
+                btn.className += "bg-dark/10 text-dark font-semibold hover:bg-dark/20";
+            } else {
+                btn.className += "text-dark/50 hover:bg-dark/10";
+            }
+
+            btn.addEventListener("click", () => {
+                window.location.href = `/journal?date=${dateStr}`;
+            });
+
+            calGrid.appendChild(btn);
+        }
+    }
+
+    calPrev.addEventListener("click", async () => {
+        calMonth--;
+        if (calMonth < 1) { calMonth = 12; calYear--; }
+        await fetchDaysForMonth(calYear, calMonth);
+        renderCalendar(calYear, calMonth);
+    });
+
+    calNext.addEventListener("click", async () => {
+        calMonth++;
+        if (calMonth > 12) { calMonth = 1; calYear++; }
+        await fetchDaysForMonth(calYear, calMonth);
+        renderCalendar(calYear, calMonth);
+    });
+
+    renderCalendar(calYear, calMonth);
+    // ─────────────────────────────────────────────────────────────
 
     async function recalculateTotals() {
         const today = (document.getElementById("journal-root") as HTMLElement).dataset.today!;
