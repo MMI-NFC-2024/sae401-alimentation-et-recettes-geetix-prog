@@ -19,11 +19,11 @@ const [users, recettes, aliments, regimes, commentaires] = await Promise.all([
 ]);
 
 const stats = [
-    { label: "Utilisateurs", value: users.totalItems, href: "/admin/utilisateurs", color: "bg-blue-500" },
-    { label: "Recettes", value: recettes.totalItems, href: "/admin/recettes", color: "bg-green-500" },
-    { label: "Aliments", value: aliments.totalItems, href: "/admin/aliments", color: "bg-orange-500" },
-    { label: "Régimes", value: regimes.totalItems, href: "#", color: "bg-purple-500" },
-    { label: "Commentaires", value: commentaires.totalItems, href: "#", color: "bg-red-500" },
+    { label: "Utilisateurs", value: users.totalItems, href: "/admin/utilisateurs", color: "bg-secondary", text: "text-tertiary" },
+    { label: "Recettes", value: recettes.totalItems, href: "/admin/recettes", color: "bg-primary", text: "text-white" },
+    { label: "Aliments", value: aliments.totalItems, href: "/admin/aliments", color: "bg-tertiary", text: "text-secondary" },
+    { label: "Régimes", value: regimes.totalItems, href: "#", color: "bg-dark", text: "text-tertiary" },
+    { label: "Commentaires", value: commentaires.totalItems, href: "#", color: "bg-primary/20", text: "text-primary" },
 ];
 
 const recentRecettes = await pbAdmin.collection("Recettes").getList(1, 5, {
@@ -38,65 +38,64 @@ const recentUsers = await pbAdmin.collection("users").getList(1, 5, {
 ---
 
 <Layout titrePage="Admin">
-    <div class="min-h-screen bg-gray-100 font-montserrat">
-        <nav class="bg-gray-900 text-white px-6 py-4 flex items-center gap-6 text-sm font-bold">
+    <div class="min-h-screen bg-tertiary/20 font-montserrat">
+        <nav class="bg-secondary text-white px-6 py-4 flex items-center gap-6 text-sm font-bold">
             <span class="font-modak text-xl text-tertiary tracking-wide">NŪRA ADMIN</span>
-            <a href="/admin" class="text-white hover:text-tertiary transition">Dashboard</a>
-            <a href="/admin/recettes" class="text-white/60 hover:text-white transition">Recettes</a>
-            <a href="/admin/aliments" class="text-white/60 hover:text-white transition">Aliments</a>
-            <a href="/admin/utilisateurs" class="text-white/60 hover:text-white transition">Utilisateurs</a>
-            <a href="/admin/notifications" class="text-white/60 hover:text-white transition">Notifications</a>
+            <a href="/admin" class="text-tertiary">Dashboard</a>
+            <a href="/admin/recettes" class="text-white/60 hover:text-tertiary transition">Recettes</a>
+            <a href="/admin/aliments" class="text-white/60 hover:text-tertiary transition">Aliments</a>
+            <a href="/admin/utilisateurs" class="text-white/60 hover:text-tertiary transition">Utilisateurs</a>
+            <a href="/admin/notifications" class="text-white/60 hover:text-tertiary transition">Notifications</a>
             <div class="ml-auto flex items-center gap-4">
                 <a href="/accueil" class="text-white/60 hover:text-white transition text-sm">← Retour au site</a>
                 <form method="POST" action="/apis/admin-logout">
-                    <button type="submit" class="text-red-400 hover:text-red-300 text-sm font-semibold transition cursor-pointer">Déconnexion</button>
+                    <button type="submit" class="text-primary hover:text-primary/70 text-sm font-semibold transition cursor-pointer">Déconnexion</button>
                 </form>
             </div>
         </nav>
 
         <main class="px-6 py-10 max-w-6xl mx-auto flex flex-col gap-10">
-            <h1 class="text-2xl font-bold text-gray-800">Dashboard</h1>
+            <h1 class="font-modak text-3xl text-secondary uppercase tracking-wide">Dashboard</h1>
 
             <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
                 {stats.map((s) => (
-                    <a href={s.href} class="bg-white rounded-2xl p-5 flex flex-col gap-2 shadow-sm hover:shadow-md transition">
-                        <div class={`w-3 h-3 rounded-full ${s.color}`}></div>
-                        <span class="text-3xl font-bold text-gray-800">{s.value}</span>
-                        <span class="text-sm text-gray-500">{s.label}</span>
+                    <a href={s.href} class={`${s.color} rounded-2xl p-5 flex flex-col gap-2 shadow-sm hover:opacity-90 transition`}>
+                        <span class={`text-3xl font-bold font-modak ${s.text}`}>{s.value}</span>
+                        <span class={`text-sm font-semibold ${s.text} opacity-80`}>{s.label}</span>
                     </a>
                 ))}
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div class="bg-white rounded-2xl p-6 shadow-sm">
-                    <h2 class="font-bold text-gray-700 mb-4">Dernières recettes</h2>
-                    <div class="flex flex-col divide-y divide-gray-100">
+                    <h2 class="font-modak text-xl text-secondary uppercase tracking-wide mb-4">Dernières recettes</h2>
+                    <div class="flex flex-col divide-y divide-secondary/10">
                         {recentRecettes.items.map((r: any) => (
                             <div class="py-3 flex justify-between items-center">
                                 <div>
-                                    <p class="font-medium text-gray-800 text-sm">{r.titre}</p>
-                                    <p class="text-xs text-gray-400 capitalize">{r.difficulte}</p>
+                                    <p class="font-semibold text-dark text-sm">{r.titre}</p>
+                                    <p class="text-xs text-dark/40 capitalize">{r.difficulte}</p>
                                 </div>
-                                <a href={`/recettes/${r.id}`} class="text-xs text-blue-500 hover:underline">Voir</a>
+                                <a href={`/recettes/${r.id}`} class="text-xs text-primary hover:text-primary/70 font-semibold transition">Voir →</a>
                             </div>
                         ))}
                     </div>
-                    <a href="/admin/recettes" class="text-xs text-gray-400 hover:text-gray-600 mt-4 inline-block">Voir tout →</a>
+                    <a href="/admin/recettes" class="text-xs text-secondary/60 hover:text-secondary font-semibold mt-4 inline-block transition">Voir tout →</a>
                 </div>
 
                 <div class="bg-white rounded-2xl p-6 shadow-sm">
-                    <h2 class="font-bold text-gray-700 mb-4">Derniers utilisateurs</h2>
-                    <div class="flex flex-col divide-y divide-gray-100">
+                    <h2 class="font-modak text-xl text-secondary uppercase tracking-wide mb-4">Derniers utilisateurs</h2>
+                    <div class="flex flex-col divide-y divide-secondary/10">
                         {recentUsers.items.map((u: any) => (
                             <div class="py-3 flex justify-between items-center">
                                 <div>
-                                    <p class="font-medium text-gray-800 text-sm">{u.prenom} {u.nom}</p>
-                                    <p class="text-xs text-gray-400">{u.email}</p>
+                                    <p class="font-semibold text-dark text-sm">{u.prenom} {u.nom}</p>
+                                    <p class="text-xs text-dark/40">{u.email}</p>
                                 </div>
                             </div>
                         ))}
                     </div>
-                    <a href="/admin/utilisateurs" class="text-xs text-gray-400 hover:text-gray-600 mt-4 inline-block">Voir tout →</a>
+                    <a href="/admin/utilisateurs" class="text-xs text-secondary/60 hover:text-secondary font-semibold mt-4 inline-block transition">Voir tout →</a>
                 </div>
             </div>
         </main>

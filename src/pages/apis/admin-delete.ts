@@ -2,7 +2,7 @@ import type { APIRoute } from "astro";
 import { createAdminPb } from "../../utils/pb";
 import { loadAdminAuth } from "../../utils/adminAuth";
 
-const ALLOWED_COLLECTIONS = ["Recettes", "Aliments", "Commentaires", "Notifications"];
+const ALLOWED_COLLECTIONS = ["Recettes", "Aliments", "Commentaires", "Notifications", "Notes", "users"];
 
 export const POST: APIRoute = async ({ request }) => {
     const adminPb = loadAdminAuth(request.headers.get("cookie"));

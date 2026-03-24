@@ -18,64 +18,66 @@ const pbUrl = import.meta.env.POCKETBASE_URL;
 ---
 
 <Layout titrePage="Admin - Aliments">
-    <div class="min-h-screen bg-gray-100 font-montserrat">
-        <nav class="bg-gray-900 text-white px-6 py-4 flex items-center gap-6 text-sm font-bold">
+    <div class="min-h-screen bg-tertiary/20 font-montserrat">
+        <nav class="bg-secondary text-white px-6 py-4 flex items-center gap-6 text-sm font-bold">
             <span class="font-modak text-xl text-tertiary tracking-wide">NŪRA ADMIN</span>
-            <a href="/admin" class="text-white/60 hover:text-white transition">Dashboard</a>
-            <a href="/admin/recettes" class="text-white/60 hover:text-white transition">Recettes</a>
-            <a href="/admin/aliments" class="text-white hover:text-tertiary transition">Aliments</a>
-            <a href="/admin/utilisateurs" class="text-white/60 hover:text-white transition">Utilisateurs</a>
-            <a href="/admin/notifications" class="text-white/60 hover:text-white transition">Notifications</a>
+            <a href="/admin" class="text-white/60 hover:text-tertiary transition">Dashboard</a>
+            <a href="/admin/recettes" class="text-white/60 hover:text-tertiary transition">Recettes</a>
+            <a href="/admin/aliments" class="text-tertiary">Aliments</a>
+            <a href="/admin/utilisateurs" class="text-white/60 hover:text-tertiary transition">Utilisateurs</a>
+            <a href="/admin/notifications" class="text-white/60 hover:text-tertiary transition">Notifications</a>
             <div class="ml-auto flex items-center gap-4">
                 <a href="/accueil" class="text-white/60 hover:text-white transition text-sm">← Retour au site</a>
                 <form method="POST" action="/apis/admin-logout">
-                    <button type="submit" class="text-red-400 hover:text-red-300 text-sm font-semibold transition cursor-pointer">Déconnexion</button>
+                    <button type="submit" class="text-primary hover:text-primary/70 text-sm font-semibold transition cursor-pointer">Déconnexion</button>
                 </form>
             </div>
         </nav>
 
         <main class="px-6 py-10 max-w-6xl mx-auto flex flex-col gap-6">
             <div class="flex items-center justify-between">
-                <h1 class="text-2xl font-bold text-gray-800">Aliments <span class="text-gray-400 text-lg font-normal">({aliments.length})</span></h1>
+                <h1 class="font-modak text-3xl text-secondary uppercase tracking-wide">
+                    Aliments <span class="font-montserrat text-dark/40 text-lg font-normal normal-case">({aliments.length})</span>
+                </h1>
             </div>
 
             <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
                 <table class="w-full text-sm">
-                    <thead class="bg-gray-50 border-b border-gray-200">
+                    <thead class="bg-secondary/10 border-b border-secondary/20">
                         <tr>
-                            <th class="text-left px-6 py-4 text-gray-500 font-semibold">Aliment</th>
-                            <th class="text-left px-6 py-4 text-gray-500 font-semibold hidden sm:table-cell">Catégorie</th>
-                            <th class="text-right px-6 py-4 text-gray-500 font-semibold hidden md:table-cell">Calories</th>
-                            <th class="text-right px-6 py-4 text-gray-500 font-semibold hidden lg:table-cell">Protéines</th>
-                            <th class="text-right px-6 py-4 text-gray-500 font-semibold hidden lg:table-cell">Glucides</th>
-                            <th class="text-right px-6 py-4 text-gray-500 font-semibold hidden lg:table-cell">Lipides</th>
+                            <th class="text-left px-6 py-4 text-secondary font-semibold">Aliment</th>
+                            <th class="text-left px-6 py-4 text-secondary font-semibold hidden sm:table-cell">Catégorie</th>
+                            <th class="text-right px-6 py-4 text-secondary font-semibold hidden md:table-cell">Calories</th>
+                            <th class="text-right px-6 py-4 text-secondary font-semibold hidden lg:table-cell">Protéines</th>
+                            <th class="text-right px-6 py-4 text-secondary font-semibold hidden lg:table-cell">Glucides</th>
+                            <th class="text-right px-6 py-4 text-secondary font-semibold hidden lg:table-cell">Lipides</th>
                             <th class="px-6 py-4"></th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-100">
+                    <tbody class="divide-y divide-secondary/10">
                         {aliments.map((a: any) => {
                             const img = a.image
                                 ? `${pbUrl}/api/files/${a.collectionId}/${a.id}/${a.image}`
                                 : null;
                             return (
-                                <tr class="hover:bg-gray-50 transition" data-id={a.id}>
+                                <tr class="hover:bg-secondary/5 transition">
                                     <td class="px-6 py-4 flex items-center gap-3">
                                         {img
-                                            ? <img src={img} alt={a.nom} class="w-9 h-9 rounded-lg object-cover shrink-0" />
-                                            : <div class="w-9 h-9 rounded-lg bg-gray-200 shrink-0"></div>
+                                            ? <img src={img} alt={a.nom} class="w-10 h-10 rounded-xl object-cover shrink-0" />
+                                            : <div class="w-10 h-10 rounded-xl bg-secondary/10 shrink-0"></div>
                                         }
-                                        <span class="font-medium text-gray-800">{a.nom}</span>
+                                        <span class="font-semibold text-dark">{a.nom}</span>
                                     </td>
                                     <td class="px-6 py-4 hidden sm:table-cell">
-                                        <span class="capitalize text-gray-600 bg-gray-100 px-2 py-1 rounded-full text-xs">{a.categorie ?? "—"}</span>
+                                        <span class="capitalize text-secondary bg-secondary/10 px-3 py-1 rounded-full text-xs font-medium">{a.categorie ?? "—"}</span>
                                     </td>
-                                    <td class="px-6 py-4 text-right text-gray-600 hidden md:table-cell">{a.calories ?? "—"} kcal</td>
-                                    <td class="px-6 py-4 text-right text-gray-600 hidden lg:table-cell">{a.proteines ?? "—"} g</td>
-                                    <td class="px-6 py-4 text-right text-gray-600 hidden lg:table-cell">{a.glucides ?? "—"} g</td>
-                                    <td class="px-6 py-4 text-right text-gray-600 hidden lg:table-cell">{a.lipides ?? "—"} g</td>
+                                    <td class="px-6 py-4 text-right text-dark/60 hidden md:table-cell font-medium">{a.calories ?? "—"} <span class="text-dark/30 font-normal">kcal</span></td>
+                                    <td class="px-6 py-4 text-right text-dark/60 hidden lg:table-cell">{a.proteines ?? "—"} g</td>
+                                    <td class="px-6 py-4 text-right text-dark/60 hidden lg:table-cell">{a.glucides ?? "—"} g</td>
+                                    <td class="px-6 py-4 text-right text-dark/60 hidden lg:table-cell">{a.lipides ?? "—"} g</td>
                                     <td class="px-6 py-4 text-right">
                                         <button
-                                            class="delete-btn text-red-400 hover:text-red-600 text-xs font-semibold transition cursor-pointer"
+                                            class="delete-btn text-primary hover:text-primary/70 text-xs font-semibold transition cursor-pointer"
                                             data-id={a.id}
                                             data-collection="Aliments"
                                             data-nom={a.nom}
@@ -89,7 +91,7 @@ const pbUrl = import.meta.env.POCKETBASE_URL;
                     </tbody>
                 </table>
                 {aliments.length === 0 && (
-                    <p class="text-center text-gray-400 py-10">Aucun aliment</p>
+                    <p class="text-center text-dark/40 py-10">Aucun aliment</p>
                 )}
             </div>
         </main>
@@ -102,18 +104,14 @@ const pbUrl = import.meta.env.POCKETBASE_URL;
             const id = btn.dataset.id!;
             const nom = btn.dataset.nom ?? "cet élément";
             const collection = btn.dataset.collection!;
-
             if (!confirm(`Supprimer "${nom}" définitivement ?`)) return;
-
             btn.textContent = "...";
             btn.disabled = true;
-
             const res = await fetch("/apis/admin-delete", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ collection, id }),
             });
-
             if (res.ok) {
                 btn.closest("tr")?.remove();
             } else {

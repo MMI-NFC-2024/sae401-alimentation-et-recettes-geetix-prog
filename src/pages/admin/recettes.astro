@@ -18,69 +18,71 @@ const pbUrl = import.meta.env.POCKETBASE_URL;
 ---
 
 <Layout titrePage="Admin - Recettes">
-    <div class="min-h-screen bg-gray-100 font-montserrat">
-        <nav class="bg-gray-900 text-white px-6 py-4 flex items-center gap-6 text-sm font-bold">
+    <div class="min-h-screen bg-tertiary/20 font-montserrat">
+        <nav class="bg-secondary text-white px-6 py-4 flex items-center gap-6 text-sm font-bold">
             <span class="font-modak text-xl text-tertiary tracking-wide">NŪRA ADMIN</span>
-            <a href="/admin" class="text-white/60 hover:text-white transition">Dashboard</a>
-            <a href="/admin/recettes" class="text-white hover:text-tertiary transition">Recettes</a>
-            <a href="/admin/aliments" class="text-white/60 hover:text-white transition">Aliments</a>
-            <a href="/admin/utilisateurs" class="text-white/60 hover:text-white transition">Utilisateurs</a>
-            <a href="/admin/notifications" class="text-white/60 hover:text-white transition">Notifications</a>
+            <a href="/admin" class="text-white/60 hover:text-tertiary transition">Dashboard</a>
+            <a href="/admin/recettes" class="text-tertiary">Recettes</a>
+            <a href="/admin/aliments" class="text-white/60 hover:text-tertiary transition">Aliments</a>
+            <a href="/admin/utilisateurs" class="text-white/60 hover:text-tertiary transition">Utilisateurs</a>
+            <a href="/admin/notifications" class="text-white/60 hover:text-tertiary transition">Notifications</a>
             <div class="ml-auto flex items-center gap-4">
                 <a href="/accueil" class="text-white/60 hover:text-white transition text-sm">← Retour au site</a>
                 <form method="POST" action="/apis/admin-logout">
-                    <button type="submit" class="text-red-400 hover:text-red-300 text-sm font-semibold transition cursor-pointer">Déconnexion</button>
+                    <button type="submit" class="text-primary hover:text-primary/70 text-sm font-semibold transition cursor-pointer">Déconnexion</button>
                 </form>
             </div>
         </nav>
 
         <main class="px-6 py-10 max-w-6xl mx-auto flex flex-col gap-6">
             <div class="flex items-center justify-between">
-                <h1 class="text-2xl font-bold text-gray-800">Recettes <span class="text-gray-400 text-lg font-normal">({recettes.length})</span></h1>
-                <a href="/recettes/nouvelle" class="bg-gray-900 text-white text-sm px-4 py-2 rounded-xl hover:bg-gray-700 transition">+ Ajouter</a>
+                <h1 class="font-modak text-3xl text-secondary uppercase tracking-wide">
+                    Recettes <span class="font-montserrat text-dark/40 text-lg font-normal normal-case">({recettes.length})</span>
+                </h1>
+                <a href="/recettes/nouvelle" class="bg-secondary text-tertiary text-sm px-5 py-2 rounded-full hover:bg-secondary/80 transition font-semibold">+ Ajouter</a>
             </div>
 
             <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
                 <table class="w-full text-sm">
-                    <thead class="bg-gray-50 border-b border-gray-200">
+                    <thead class="bg-secondary/10 border-b border-secondary/20">
                         <tr>
-                            <th class="text-left px-6 py-4 text-gray-500 font-semibold">Recette</th>
-                            <th class="text-left px-6 py-4 text-gray-500 font-semibold hidden sm:table-cell">Difficulté</th>
-                            <th class="text-left px-6 py-4 text-gray-500 font-semibold hidden md:table-cell">Note</th>
-                            <th class="text-left px-6 py-4 text-gray-500 font-semibold hidden lg:table-cell">Créé le</th>
+                            <th class="text-left px-6 py-4 text-secondary font-semibold">Recette</th>
+                            <th class="text-left px-6 py-4 text-secondary font-semibold hidden sm:table-cell">Difficulté</th>
+                            <th class="text-left px-6 py-4 text-secondary font-semibold hidden md:table-cell">Note</th>
+                            <th class="text-left px-6 py-4 text-secondary font-semibold hidden lg:table-cell">Créé le</th>
                             <th class="px-6 py-4"></th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-100">
+                    <tbody class="divide-y divide-secondary/10">
                         {recettes.map((r: any) => {
                             const img = r.image
                                 ? `${pbUrl}/api/files/${r.collectionId}/${r.id}/${r.image}`
                                 : null;
                             const date = new Date((r.created ?? "").replace(" ", "T")).toLocaleDateString("fr-FR");
                             return (
-                                <tr class="hover:bg-gray-50 transition" data-id={r.id}>
+                                <tr class="hover:bg-secondary/5 transition">
                                     <td class="px-6 py-4 flex items-center gap-3">
                                         {img
-                                            ? <img src={img} alt={r.titre} class="w-10 h-10 rounded-lg object-cover shrink-0" />
-                                            : <div class="w-10 h-10 rounded-lg bg-gray-200 shrink-0"></div>
+                                            ? <img src={img} alt={r.titre} class="w-10 h-10 rounded-xl object-cover shrink-0" />
+                                            : <div class="w-10 h-10 rounded-xl bg-secondary/10 shrink-0"></div>
                                         }
                                         <div>
-                                            <p class="font-medium text-gray-800">{r.titre}</p>
-                                            <p class="text-xs text-gray-400">{r.temps_preparation ?? "?"} min</p>
+                                            <p class="font-semibold text-dark">{r.titre}</p>
+                                            <p class="text-xs text-dark/40">{r.temps_preparation ?? "?"} min</p>
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 hidden sm:table-cell">
-                                        <span class="capitalize text-gray-600">{r.difficulte ?? "—"}</span>
+                                        <span class="capitalize text-secondary bg-secondary/10 px-3 py-1 rounded-full text-xs font-medium">{r.difficulte ?? "—"}</span>
                                     </td>
                                     <td class="px-6 py-4 hidden md:table-cell">
-                                        <span class="text-yellow-500 font-semibold">{r.note_moyenne ? `★ ${r.note_moyenne}` : "—"}</span>
+                                        <span class="text-tertiary bg-dark px-3 py-1 rounded-full text-xs font-bold">{r.note_moyenne ? `★ ${r.note_moyenne}` : "—"}</span>
                                     </td>
-                                    <td class="px-6 py-4 text-gray-400 hidden lg:table-cell">{date}</td>
+                                    <td class="px-6 py-4 text-dark/40 hidden lg:table-cell text-xs">{date}</td>
                                     <td class="px-6 py-4 text-right">
-                                        <div class="flex items-center justify-end gap-3">
-                                            <a href={`/recettes/${r.id}`} class="text-blue-500 hover:underline text-xs">Voir</a>
+                                        <div class="flex items-center justify-end gap-4">
+                                            <a href={`/recettes/${r.id}`} class="text-secondary hover:text-secondary/70 text-xs font-semibold transition">Voir</a>
                                             <button
-                                                class="delete-btn text-red-400 hover:text-red-600 text-xs font-semibold transition cursor-pointer"
+                                                class="delete-btn text-primary hover:text-primary/70 text-xs font-semibold transition cursor-pointer"
                                                 data-id={r.id}
                                                 data-collection="Recettes"
                                                 data-nom={r.titre}
@@ -95,7 +97,7 @@ const pbUrl = import.meta.env.POCKETBASE_URL;
                     </tbody>
                 </table>
                 {recettes.length === 0 && (
-                    <p class="text-center text-gray-400 py-10">Aucune recette</p>
+                    <p class="text-center text-dark/40 py-10">Aucune recette</p>
                 )}
             </div>
         </main>
@@ -108,18 +110,14 @@ const pbUrl = import.meta.env.POCKETBASE_URL;
             const id = btn.dataset.id!;
             const nom = btn.dataset.nom ?? "cet élément";
             const collection = btn.dataset.collection!;
-
             if (!confirm(`Supprimer "${nom}" définitivement ?`)) return;
-
             btn.textContent = "...";
             btn.disabled = true;
-
             const res = await fetch("/apis/admin-delete", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ collection, id }),
             });
-
             if (res.ok) {
                 btn.closest("tr")?.remove();
             } else {
