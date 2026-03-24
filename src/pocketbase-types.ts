@@ -2,6 +2,7 @@ import type PocketBase from 'pocketbase'
 import type { RecordService } from 'pocketbase'
 
 export enum Collections {
+	Accompagnements = "Accompagnements",
 	Aliments = "Aliments",
 	Etapes = "Etapes",
 	RecetteAliments = "Recette_aliments",
@@ -46,6 +47,22 @@ export enum AlimentsCategorieOptions {
 	"fruit" = "fruit",
 	"viande" = "viande",
 }
+export type AccompagnementsRecord = {
+	titre: string
+	description?: string
+	tags?: string
+	lien?: string
+	couleur?: string
+	textColor?: string
+	tagColor?: string
+	btnColor?: string
+	icon?: string
+	ordre?: number
+	created: IsoAutoDateString
+	id: string
+	updated: IsoAutoDateString
+}
+
 export type AlimentsRecord = {
 	calories?: number
 	categorie?: AlimentsCategorieOptions
@@ -195,6 +212,7 @@ export type UsersRecord = {
 	verified?: boolean
 }
 
+export type AccompagnementsResponse<Texpand = unknown> = Required<AccompagnementsRecord> & BaseSystemFields<Texpand>
 export type AlimentsResponse<Texpand = unknown> = Required<AlimentsRecord> & BaseSystemFields<Texpand>
 export type EtapesResponse<Texpand = unknown> = Required<EtapesRecord> & BaseSystemFields<Texpand>
 export type RecetteAlimentsResponse<Texpand = unknown> = Required<RecetteAlimentsRecord> & BaseSystemFields<Texpand>
@@ -209,6 +227,7 @@ export type SuperusersResponse<Texpand = unknown> = Required<SuperusersRecord> &
 export type UsersResponse<Texpand = unknown> = Required<UsersRecord> & AuthSystemFields<Texpand>
 
 export type CollectionRecords = {
+	Accompagnements: AccompagnementsRecord
 	Aliments: AlimentsRecord
 	Etapes: EtapesRecord
 	Recette_aliments: RecetteAlimentsRecord
@@ -224,6 +243,7 @@ export type CollectionRecords = {
 }
 
 export type CollectionResponses = {
+	Accompagnements: AccompagnementsResponse
 	Aliments: AlimentsResponse
 	Etapes: EtapesResponse
 	Recette_aliments: RecetteAlimentsResponse
